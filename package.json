@@ -1,0 +1,46 @@
+{
+  "name": "plumage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "spago test",
+    "storybook": "start-storybook -p 6006  -s ./node_modules/",
+    "build-storybook": "build-storybook  -s ./node_modules/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/murmuras-tech/plumage.git"
+  },
+  "author": "mark@murmuras.com",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/murmuras-tech/plumage/issues"
+  },
+  "homepage": "https://github.com/murmuras-tech/plumage#readme",
+  "dependencies": {
+    "@emotion/react": "^11.4.0",
+    "@fontsource/inter": "^4.4.5",
+    "@fontsource/jetbrains-mono": "^4.4.5",
+    "@react-aria/button": "^3.3.2",
+    "@react-aria/focus": "^3.3.0",
+    "@react-aria/interactions": "^3.4.0",
+    "@react-aria/utils": "^3.8.0",
+    "framer-motion": "^4.1.17",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-laag": "^2.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@storybook/addon-actions": "^6.2.9",
+    "@storybook/addon-essentials": "^6.2.9",
+    "@storybook/addon-links": "^6.2.9",
+    "@storybook/react": "^6.2.9",
+    "babel-loader": "^8.2.2"
+  }
+}
