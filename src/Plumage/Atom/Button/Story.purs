@@ -38,7 +38,6 @@ button = do
               , css: baseButtonStyle
               , buttonProps:
                 { "aria-label": "eddy"
-                , element: R.a'
                 , onPress: mkEffectFn1 $ const $ (Console.log "Sausage")
                 }
               }

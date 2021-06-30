@@ -3,7 +3,6 @@ module Plumage.Atom.Button where
 import Prelude
 import Foreign.Object as Object
 import Data.Array (fold)
-import Data.Foldable (traverse_)
 import Data.Maybe (Maybe)
 import Data.Monoid (guard)
 import Data.Nullable (Nullable)
@@ -12,30 +11,22 @@ import Data.Traversable (for, for_)
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
-import Framer.Motion (Infinity)
 import Framer.Motion as M
-import Literals.Null (Null)
-import Plumage.Style (pB, pX, pY)
-import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizingBorderBox, rounded, rounded2xl, rounded3xl, roundedDefault, roundedSm, roundedXl)
+import Plumage.Style (pX, pY)
+import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizingBorderBox, rounded, roundedXl)
 import Plumage.Style.BoxShadow as BoxShadow
-import Plumage.Style.Color.Background (linear, col) as BG
+import Plumage.Style.Color.Background (col) as BG
 import Plumage.Style.Color.Tailwind as C
 import Plumage.Style.Color.Text (text) as Col
 import Plumage.Style.Cursor (cursorPointer)
-import Prim.Row (class Union)
-import React.Aria.Button (ButtonPropsImpl, useButton)
+import React.Aria.Button (useButton)
 import React.Aria.Focus (useFocusRing)
 import React.Aria.Utils (mergeProps)
 import React.Basic.DOM (css, unsafeCreateDOMComponent)
-import React.Basic.DOM as R
 import React.Basic.Emotion (Style, px)
 import React.Basic.Emotion as E
-import React.Basic.Hooks (Component, JSX, Ref, component, fragment, readRefMaybe, useEffectAlways)
+import React.Basic.Hooks (Ref, component, fragment, readRefMaybe, useEffectAlways)
 import React.Basic.Hooks as React
-import React.Laag (useLayer)
-import Record (disjointUnion, union)
-import Record.Builder as RB
-import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
 import Web.HTML.HTMLElement (DOMRect, HTMLElement, getBoundingClientRect)
 import Web.HTML.HTMLElement as HTMLElement
