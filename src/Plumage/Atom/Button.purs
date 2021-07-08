@@ -17,7 +17,7 @@ import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizi
 import Plumage.Style.BoxShadow as BoxShadow
 import Plumage.Style.Color.Background (col) as BG
 import Plumage.Style.Color.Tailwind as C
-import Plumage.Style.Color.Text (text) as Col
+import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
 import React.Aria.Button (useButton)
 import React.Aria.Focus (useFocusRing)
@@ -102,13 +102,13 @@ baseButtonStyle ∷ Style
 baseButtonStyle =
   fold
     [ BG.col C.white
-    , Col.text C.black
+    , textCol C.black
     , roundedXl
     , borderSolid
     , borderCol C.gray._300
     , border 1
-    , pY (11 # px)
-    , pX (27 # px)
+    , pY 11
+    , pX 27
     , boxSizingBorderBox
     , BoxShadow.sm
     , cursorPointer
@@ -127,10 +127,11 @@ primaryButtonStyle =
   baseButtonStyle
     <> fold
         [ BG.col C.violet._600
-        , Col.text C.white
+        , textCol C.white
         , borderNone
-        , pY (12 # px)
-        , pX (28 # px)
+        , pY 12
+        , pX 28
+        , BoxShadow.defaultCol C.violet._600
         ]
 
 getBoundingBoxFromRef ∷ Ref (Nullable Node) -> Effect (Maybe DOMRect)

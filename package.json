@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "spago test",
+    "prestorybook": "spago -x stories.dhall build",
     "storybook": "start-storybook -p 6006  -s ./node_modules/",
     "build-storybook": "build-storybook  -s ./node_modules/"
   },
@@ -37,7 +38,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.14.3",
-    "@storybook/react": "^6.2.9",
-    "babel-loader": "^8.2.2"
+    "@storybook/react": "^6.3.2",
+    "babel-loader": "^8.2.2",
+    "prettier": "^2.3.2"
   }
 }
