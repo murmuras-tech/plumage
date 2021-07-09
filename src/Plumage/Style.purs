@@ -3,7 +3,7 @@ module Plumage.Style where
 
 import Prelude
 
-import React.Basic.Emotion (Style, StyleProperty, css, px)
+import React.Basic.Emotion (Style, StyleProperty, auto, css, px)
 
 p ∷ Int -> Style
 p = css <<< { padding: _ } <<< px
@@ -43,6 +43,9 @@ mR = css <<< { marginRight: _ } <<< px
 
 mX ∷ Int -> Style
 mX n = mR n <> mL n
+
+mXAuto :: Style
+mXAuto = mX' auto
 
 mY ∷ Int -> Style
 mY n = mT n <> mB n

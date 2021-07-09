@@ -1,7 +1,6 @@
 module Plumage.Atom.Button where
 
 import Prelude
-import Foreign.Object as Object
 import Data.Array (fold)
 import Data.Maybe (Maybe)
 import Data.Monoid (guard)
@@ -11,11 +10,12 @@ import Data.Traversable (for, for_)
 import Data.Tuple.Nested ((/\))
 import Debug (spy)
 import Effect (Effect)
+import Foreign.Object as Object
 import Framer.Motion as M
 import Plumage.Style (pX, pY)
 import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizingBorderBox, rounded, roundedXl)
-import Plumage.Style.BoxShadow as BoxShadow
-import Plumage.Style.Color.Background (col) as BG
+import Plumage.Style.BoxShadow (shadowDefaultCol, shadowSm)
+import Plumage.Style.Color.Background (background)
 import Plumage.Style.Color.Tailwind as C
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
@@ -23,7 +23,7 @@ import React.Aria.Button (useButton)
 import React.Aria.Focus (useFocusRing)
 import React.Aria.Utils (mergeProps)
 import React.Basic.DOM (css, unsafeCreateDOMComponent)
-import React.Basic.Emotion (Style, px)
+import React.Basic.Emotion (Style)
 import React.Basic.Emotion as E
 import React.Basic.Hooks (Ref, component, fragment, readRefMaybe, useEffectAlways)
 import React.Basic.Hooks as React
@@ -32,18 +32,18 @@ import Web.HTML.HTMLElement (DOMRect, HTMLElement, getBoundingClientRect)
 import Web.HTML.HTMLElement as HTMLElement
 
 mkButton = do
-  rawButton <- unsafeCreateDOMComponent "button"
-  component "Button" \props -> React.do
-    ref <- React.useRef Nullable.null
-    boundingBox /\ setBoundingBox <- React.useState' zero
+  rawButton ← unsafeCreateDOMComponent "button"
+  component "Button" \props → React.do
+    ref ← React.useRef Nullable.null
+    boundingBox /\ setBoundingBox ← React.useState' zero
     useEffectAlways do
-      maybeBB <- getBoundingBoxFromRef ref
-      for_ maybeBB \bb ->
+      maybeBB ← getBoundingBoxFromRef ref
+      for_ maybeBB \bb →
         when (bb /= boundingBox) (setBoundingBox bb)
       mempty
-    { buttonProps } <- useButton props.buttonProps ref
+    { buttonProps } ← useButton props.buttonProps ref
     let _ = spy "buttonProps" buttonProps
-    { isFocused, isFocusVisible, focusProps } <-
+    { isFocused, isFocusVisible, focusProps } ←
       useFocusRing { within: false, isTextInput: false, autoFocus: false }
     let _ = spy "focusProps" { isFocused, isFocusVisible, focusProps }
     pure
@@ -65,21 +65,21 @@ mkButton = do
                   { className: "focus-outline"
                   , css: focusStyle
                   , initial:
-                    M.initial
-                      $ css
-                          { width: boundingBox.width
-                          , height: boundingBox.height
-                          , left: boundingBox.left
-                          , top: boundingBox.top
-                          }
+                      M.initial
+                        $ css
+                            { width: boundingBox.width
+                            , height: boundingBox.height
+                            , left: boundingBox.left
+                            , top: boundingBox.top
+                            }
                   , animate:
-                    M.animate
-                      $ css
-                          { width: boundingBox.width + 12.0
-                          , height: boundingBox.height + 12.0
-                          , left: boundingBox.left - 6.0
-                          , top: boundingBox.top - 6.0
-                          }
+                      M.animate
+                        $ css
+                            { width: boundingBox.width + 12.0
+                            , height: boundingBox.height + 12.0
+                            , left: boundingBox.left - 6.0
+                            , top: boundingBox.top - 6.0
+                            }
                   , layout: M.layout true
                   , layoutId: M.layoutId "focus-indicator"
                   , _aria: Object.singleton "hidden" "true"
@@ -101,7 +101,7 @@ focusStyle =
 baseButtonStyle ∷ Style
 baseButtonStyle =
   fold
-    [ BG.col C.white
+    [ background C.white
     , textCol C.black
     , roundedXl
     , borderSolid
@@ -110,7 +110,7 @@ baseButtonStyle =
     , pY 11
     , pX 27
     , boxSizingBorderBox
-    , BoxShadow.sm
+    , shadowSm
     , cursorPointer
     , E.css
         { fontFamily: E.str "InterVariable, sans-serif"
@@ -126,20 +126,20 @@ primaryButtonStyle ∷ Style
 primaryButtonStyle =
   baseButtonStyle
     <> fold
-        [ BG.col C.violet._600
+        [ background C.violet._600
         , textCol C.white
         , borderNone
         , pY 12
         , pX 28
-        , BoxShadow.defaultCol C.violet._600
+        , shadowDefaultCol C.violet._600
         ]
 
-getBoundingBoxFromRef ∷ Ref (Nullable Node) -> Effect (Maybe DOMRect)
+getBoundingBoxFromRef ∷ Ref (Nullable Node) → Effect (Maybe DOMRect)
 getBoundingBoxFromRef itemRef = do
-  htmlElem <- getHTMLElementFromRef itemRef
+  htmlElem ← getHTMLElementFromRef itemRef
   for htmlElem getBoundingClientRect
 
-getHTMLElementFromRef ∷ Ref (Nullable Node) -> Effect (Maybe HTMLElement)
+getHTMLElementFromRef ∷ Ref (Nullable Node) → Effect (Maybe HTMLElement)
 getHTMLElementFromRef itemRef = do
-  maybeNode <- readRefMaybe itemRef
+  maybeNode ← readRefMaybe itemRef
   pure $ HTMLElement.fromNode =<< maybeNode
