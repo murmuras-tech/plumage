@@ -1,7 +1,7 @@
 module Plumage.Style.Text where
 
 import Prelude
-import React.Basic.Emotion (Style, StyleProperty, css, em, int, rem)
+import React.Basic.Emotion (Style, css, em, int, rem)
 
 textSized ∷ Number → Number → Style
 textSized fs lh = css { fontSize: fs # rem, lineHeight: lh # rem }
@@ -52,15 +52,15 @@ fontExtrabold = css { fontWeight: int 800 }
 fontBlack ∷ Style
 fontBlack = css { fontWeight: int 900 }
 
-trackingTighter ∷ { letterSpacing ∷ StyleProperty }
-trackingTighter = { letterSpacing: -0.05 # em }
-trackingTight ∷ { letterSpacing ∷ StyleProperty }
-trackingTight = { letterSpacing: -0.025 # em }
-trackingNormal ∷ { letterSpacing ∷ StyleProperty }
-trackingNormal = { letterSpacing: 0.0 # em }
-trackingWide ∷ { letterSpacing ∷ StyleProperty }
-trackingWide = { letterSpacing: 0.025 # em }
-trackingWider ∷ { letterSpacing ∷ StyleProperty }
-trackingWider = { letterSpacing: 0.05 # em }
-trackingWidest ∷ { letterSpacing ∷ StyleProperty }
-trackingWidest = { letterSpacing: 0.1 # em }
+trackingTighter ∷ Style
+trackingTighter = css { letterSpacing: -0.05 # em }
+trackingTight ∷ Style
+trackingTight = css { letterSpacing: -0.025 # em }
+trackingNormal ∷ Style
+trackingNormal = css { letterSpacing: 0.0 # em }
+trackingWide ∷ Style
+trackingWide = css { letterSpacing: 0.025 # em }
+trackingWider ∷ Style
+trackingWider = css { letterSpacing: 0.05 # em }
+trackingWidest ∷ Style
+trackingWidest = css { letterSpacing: 0.1 # em }
