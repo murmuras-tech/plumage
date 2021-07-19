@@ -3,21 +3,29 @@ module Plumage.Style.Divide
   , divideXReverse
   , divideY
   , divideYReverse
+  , divideCol
   ) where
 
 import Prelude
-import React.Basic.Emotion (Style, css, nested, px)
+import Color (Color)
+import React.Basic.Emotion (Style, color, css, nested, px, solid)
 
 nestChildren ∷ Style → Style
-nestChildren inner = css { "&: * > *": nested inner }
+nestChildren inner = css { "& > * + *": nested inner }
 
 divideX ∷ Int → Style
 divideX pixels =
   nestChildren
-    $ css
-        { borderRightWidth: px (negate pixels)
-        , borderLeftWidth: px pixels
-        }
+    $ if pixels >= 0 then
+        css
+          { borderLeftWidth: px pixels
+          , borderLeftStyle: solid
+          }
+      else
+        css
+          { borderRightWidth: px pixels
+          , borderRightStyle: solid
+          }
 
 divideXReverse ∷ Int → Style
 divideXReverse = negate >>> divideX
@@ -25,10 +33,22 @@ divideXReverse = negate >>> divideX
 divideY ∷ Int → Style
 divideY pixels =
   nestChildren
-    $ css
-        { borderTopWidth: px (negate pixels)
-        , borderBottomWidth: px pixels
-        }
+    $ if pixels >= 0 then
+        css
+          { borderTopWidth: px pixels
+          , borderTopStyle: solid
+          }
+      else
+        css
+          { borderBottomWidth: px pixels
+          , borderBottomStyle: solid
+          }
 
 divideYReverse ∷ Int → Style
 divideYReverse = negate >>> divideY
+
+divideCol ∷ Color → Style
+divideCol col =
+  nestChildren
+    $ css
+        { borderColor: color col }
