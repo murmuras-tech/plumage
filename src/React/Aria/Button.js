@@ -26,7 +26,6 @@ exports.toDashedProps = (psProps) => {
 }
 
 exports.fromDashedProps = (reactProps) => {
-  console.log("Hi, I'm from dashed props", reactProps)
   const psProps = {}
   _aria = {}
   _data = {}

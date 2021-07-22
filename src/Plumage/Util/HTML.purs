@@ -4,6 +4,7 @@ import React.Basic (JSX, ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Emotion (Style)
 import React.Basic.Emotion as E
+import Record (disjointUnion)
 
 jsx ∷
   ReactComponent

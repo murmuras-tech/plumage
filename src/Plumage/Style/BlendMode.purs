@@ -1,7 +1,7 @@
 module Plumage.Style.BlendMode where
 
 import Plumage.Style.BlendMode.Types (BlendMode, blendModeToStyleProperty)
-import React.Basic.Emotion (Style, css, str)
+import React.Basic.Emotion (Style, css)
 
 mixBlendMode ∷ BlendMode → Style
 mixBlendMode bm = css { mixBlendMode: blendModeToStyleProperty bm }

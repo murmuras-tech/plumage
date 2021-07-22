@@ -8,7 +8,6 @@ import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.Traversable (for, for_)
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Foreign.Object as Object
 import Framer.Motion as M
@@ -19,10 +18,12 @@ import Plumage.Style.Color.Background (background)
 import Plumage.Style.Color.Tailwind as C
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
+import Plumage.Style.Position (positionRelative)
 import React.Aria.Button (useButton)
 import React.Aria.Focus (useFocusRing)
 import React.Aria.Utils (mergeProps)
 import React.Basic.DOM (css, unsafeCreateDOMComponent)
+import React.Basic.DOM as R
 import React.Basic.Emotion (Style)
 import React.Basic.Emotion as E
 import React.Basic.Hooks (Ref, component, fragment, readRefMaybe, useEffectAlways)
@@ -42,50 +43,52 @@ mkButton = do
         when (bb /= boundingBox) (setBoundingBox bb)
       mempty
     { buttonProps } ← useButton props.buttonProps ref
-    let _ = spy "buttonProps" buttonProps
     { isFocused, isFocusVisible, focusProps } ←
       useFocusRing { within: false, isTextInput: false, autoFocus: false }
-    let _ = spy "focusProps" { isFocused, isFocusVisible, focusProps }
     pure
-      $ fragment
-          [ E.element rawButton
-              ( mergeProps
-                  focusProps
+      $ E.element R.div'
+          { className: "plm-button-container"
+          , css: positionRelative
+          , children:
+              [ E.element rawButton
                   ( mergeProps
-                      buttonProps
-                      { className: "plm-button"
-                      , css: props.css
-                      , children: props.children
-                      , ref
+                      focusProps
+                      ( mergeProps
+                          buttonProps
+                          { className: "plm-button"
+                          , css: props.css
+                          , children: props.children
+                          , ref
+                          }
+                      )
+                  )
+              , guard (isFocused && isFocusVisible)
+                  ( E.element M.div
+                      { className: "focus-outline"
+                      , css: focusStyle
+                      , initial:
+                          M.initial
+                            $ css
+                                { width: boundingBox.width
+                                , height: boundingBox.height
+                                , left: boundingBox.left
+                                , top: boundingBox.top
+                                }
+                      , animate:
+                          M.animate
+                            $ css
+                                { width: boundingBox.width + 12.0
+                                , height: boundingBox.height + 12.0
+                                , left: boundingBox.left - 6.0
+                                , top: boundingBox.top - 6.0
+                                }
+                      , layout: M.layout true
+                      , layoutId: M.layoutId "focus-indicator"
+                      , _aria: Object.singleton "hidden" "true"
                       }
                   )
-              )
-          , guard (isFocused && isFocusVisible)
-              ( E.element M.div
-                  { className: "focus-outline"
-                  , css: focusStyle
-                  , initial:
-                      M.initial
-                        $ css
-                            { width: boundingBox.width
-                            , height: boundingBox.height
-                            , left: boundingBox.left
-                            , top: boundingBox.top
-                            }
-                  , animate:
-                      M.animate
-                        $ css
-                            { width: boundingBox.width + 12.0
-                            , height: boundingBox.height + 12.0
-                            , left: boundingBox.left - 6.0
-                            , top: boundingBox.top - 6.0
-                            }
-                  , layout: M.layout true
-                  , layoutId: M.layoutId "focus-indicator"
-                  , _aria: Object.singleton "hidden" "true"
-                  }
-              )
-          ]
+              ]
+          }
 
 focusStyle ∷ Style
 focusStyle =
