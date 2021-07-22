@@ -39,9 +39,10 @@ mkButton = do
   rawButton ← unsafeCreateDOMComponent "button"
   component "Button" \props → React.do
     ref ← React.useRef Nullable.null
+    containerRef ← React.useRef Nullable.null
     boundingBox /\ setBoundingBox ← React.useState' zero
     useEffectAlways do
-      maybeBB ← getBoundingBoxFromRef ref
+      maybeBB ← getBoundingBoxFromRef containerRef
       for_ maybeBB \bb →
         when (bb /= boundingBox) (setBoundingBox bb)
       mempty
@@ -52,7 +53,7 @@ mkButton = do
       $ E.element R.div'
           { className: "plm-button-container"
           , css: positionRelative <> inlineBlock <> pXY 0 <> mXY 0
-          , ref
+          , ref: containerRef
           , children:
               [ E.element rawButton
                   ( mergeProps
@@ -61,6 +62,7 @@ mkButton = do
                           buttonProps
                           { className: "plm-button"
                           , css: props.css
+                          , ref
                           , children: props.children
                           }
                       )
