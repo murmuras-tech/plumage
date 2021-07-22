@@ -57,9 +57,9 @@ mkButton = do
           , children:
               [ E.element rawButton
                   ( mergeProps
-                      buttonProps
+                      focusProps
                       ( mergeProps
-                          focusProps
+                          buttonProps
                           { className: "plm-button"
                           , css: props.css
                           , ref
