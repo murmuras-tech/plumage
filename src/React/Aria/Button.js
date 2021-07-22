@@ -37,7 +37,7 @@ exports.fromDashedProps = (reactProps) => {
     } else {
       psProps[key] = value
     }
-    console.log(psProps)
+    // console.log(psProps)
   })
   if (Object.keys(_aria).length !== 0) {
     psProps._aria = _aria
