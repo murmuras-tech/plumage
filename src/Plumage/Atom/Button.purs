@@ -22,6 +22,7 @@ import Plumage.Style.Cursor (cursorPointer)
 import Plumage.Style.Display (inlineBlock)
 import Plumage.Style.Opacity (opacity)
 import Plumage.Style.Position (positionRelative, positionAbsolute)
+import Plumage.Style.Size (height, width)
 import React.Aria.Button (useButton)
 import React.Aria.Focus (useFocusRing)
 import React.Aria.Utils (mergeProps)
@@ -52,7 +53,11 @@ mkButton = do
     pure
       $ E.element R.div'
           { className: "plm-button-container"
-          , css: positionRelative <> inlineBlock <> pXY 0 <> mXY 0
+          , css:
+              positionRelative
+                <> inlineBlock
+                <> pXY 0
+                <> mXY 0
           , ref: containerRef
           , children:
               [ E.element rawButton
