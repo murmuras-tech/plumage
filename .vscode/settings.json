@@ -1,4 +1,4 @@
 {
   "editor.formatOnSave": true,
-  "purescript.pursExe": "purs-es"
+  "purescript.addNpmPath": true
 }

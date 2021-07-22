@@ -11,14 +11,17 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Foreign.Object as Object
 import Framer.Motion as M
-import Plumage.Style (pX, pY)
+import Plumage.Layer as Layer
+import Plumage.Style (mXY, pX, pXY, pY)
 import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizingBorderBox, rounded, roundedXl)
 import Plumage.Style.BoxShadow (shadowDefaultCol, shadowSm)
 import Plumage.Style.Color.Background (background)
 import Plumage.Style.Color.Tailwind as C
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
-import Plumage.Style.Position (positionRelative)
+import Plumage.Style.Display (inlineBlock)
+import Plumage.Style.Opacity (opacity)
+import Plumage.Style.Position (positionRelative, positionAbsolute)
 import React.Aria.Button (useButton)
 import React.Aria.Focus (useFocusRing)
 import React.Aria.Utils (mergeProps)
@@ -26,7 +29,7 @@ import React.Basic.DOM (css, unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Emotion (Style)
 import React.Basic.Emotion as E
-import React.Basic.Hooks (Ref, component, fragment, readRefMaybe, useEffectAlways)
+import React.Basic.Hooks (Ref, component, readRefMaybe, useEffectAlways)
 import React.Basic.Hooks as React
 import Web.DOM (Node)
 import Web.HTML.HTMLElement (DOMRect, HTMLElement, getBoundingClientRect)
@@ -48,7 +51,8 @@ mkButton = do
     pure
       $ E.element R.div'
           { className: "plm-button-container"
-          , css: positionRelative
+          , css: positionRelative <> inlineBlock <> pXY 0 <> mXY 0
+          , ref
           , children:
               [ E.element rawButton
                   ( mergeProps
@@ -58,7 +62,6 @@ mkButton = do
                           { className: "plm-button"
                           , css: props.css
                           , children: props.children
-                          , ref
                           }
                       )
                   )
@@ -71,16 +74,16 @@ mkButton = do
                             $ css
                                 { width: boundingBox.width
                                 , height: boundingBox.height
-                                , left: boundingBox.left
-                                , top: boundingBox.top
+                                , left: 0
+                                , top: 0
                                 }
                       , animate:
                           M.animate
                             $ css
                                 { width: boundingBox.width + 12.0
                                 , height: boundingBox.height + 12.0
-                                , left: boundingBox.left - 6.0
-                                , top: boundingBox.top - 6.0
+                                , left: -6.0
+                                , top: -6.0
                                 }
                       , layout: M.layout true
                       , layoutId: M.layoutId "focus-indicator"
@@ -98,7 +101,9 @@ focusStyle =
     , borderSolid
     , boxSizingBorderBox
     , rounded (E.px 17)
-    , E.css { position: E.absolute, opacity: E.str "0.7" }
+    , positionAbsolute
+    , opacity 80
+    , Layer.topmost
     ]
 
 baseButtonStyle ∷ Style
