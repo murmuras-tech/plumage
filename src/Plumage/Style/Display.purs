@@ -17,3 +17,6 @@ inlineGrid = css { display: E.inlineGrid }
 
 block ∷ Style
 block = css { display: E.block }
+
+none ∷ Style
+none = css { display: E.none }
