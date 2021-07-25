@@ -1,24 +1,56 @@
 module Plumage.Style.Size where
 
-import React.Basic.Emotion (Style, StyleProperty, css, percent, vh, vw)
+import Prelude
+import React.Basic.Emotion (Style, StyleProperty, css, percent, px, vh, vw)
 
-width ∷ StyleProperty → Style
-width w = css { width: w }
+width' ∷ StyleProperty → Style
+width' = css <<< { width: _ }
+width ∷ Int → Style
+width = px >>> width'
 
-screenWidth ∷ StyleProperty
-screenWidth = vw 100.0
+minWidth' ∷ StyleProperty → Style
+minWidth' = css <<< { minWidth: _ }
+minWidth ∷ Int → Style
+minWidth = px >>> minWidth'
 
-height ∷ StyleProperty → Style
-height h = css { height: h }
+maxWidth' ∷ StyleProperty → Style
+maxWidth' = css <<< { maxWidth: _ }
+maxWidth ∷ Int → Style
+maxWidth = px >>> maxWidth'
 
-screenHeight ∷ StyleProperty
-screenHeight = vh 100.0
+widthFull ∷ Style
+widthFull = width' full
+
+widthScreen ∷ Style
+widthScreen = width' screenWidth
+
+height ∷ Int → Style
+height = px >>> height'
+
+height' ∷ StyleProperty → Style
+height' = css <<< { height: _ }
+
+minHeight' ∷ StyleProperty → Style
+minHeight' = css <<< { minHeight: _ }
+minHeight ∷ Int → Style
+minHeight = px >>> minHeight'
+
+maxHeight' ∷ StyleProperty → Style
+maxHeight' = css <<< { minHeight: _ }
+maxHeight ∷ Int → Style
+maxHeight = px >>> maxHeight'
+
+heightFull ∷ Style
+heightFull = height' full
+
+heightScreen ∷ Style
+heightScreen = height' screenHeight
 
 full ∷ StyleProperty
 full = percent 100.0
 
-widthScreen ∷ Style
-widthScreen = width screenWidth
+screenWidth ∷ StyleProperty
+screenWidth = vw 100.0
 
-heightScreen ∷ Style
-heightScreen = height screenHeight
+screenHeight ∷ StyleProperty
+screenHeight = vh 100.0
