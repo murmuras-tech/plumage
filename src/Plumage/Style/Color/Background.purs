@@ -5,7 +5,6 @@ import Color (Color, cssStringRGBA)
 import Data.Array (intercalate)
 import Plumage.Style.Color.Util (withAlpha)
 import React.Basic.Emotion (Style, color, css, nested, str)
-import React.Basic.Emotion as E
 
 background ∷ Color → Style
 background = css <<< { backgroundColor: _ } <<< color
@@ -14,7 +13,7 @@ linearGradient ∷ Int → Array Color → Style
 linearGradient deg colors = css { background: bg }
   where
   bg =
-    E.str
+    str
       $ "linear-gradient("
       <> show deg
       <> "deg, "
@@ -35,12 +34,12 @@ blurredBackground' { blurredCol, fallbackCol, blurRadius } =
     { "@supports (backdrop-filter: blur(12px))":
         nested
           $ css
-              { backgroundColor: color blurredCol
+              { background: str $ cssStringRGBA blurredCol
               , backdropFilter: str $ "blur(" <> show blurRadius <> "px)"
               }
     , "@supports not (backdrop-filter: blur(12px))":
         nested
           $ css
-              { backgroundColor: color fallbackCol
+              { background: str $ cssStringRGBA fallbackCol
               }
     }
