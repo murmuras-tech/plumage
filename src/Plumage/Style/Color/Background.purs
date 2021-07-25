@@ -36,7 +36,7 @@ blurredBackground' { blurredCol, fallbackCol, blurRadius } =
         nested
           $ css
               { backgroundColor: color blurredCol
-              , backdropFilter: str $ "blur(" <> show blurRadius <> ")"
+              , backdropFilter: str $ "blur(" <> show blurRadius <> "px)"
               }
     , "@supports not (backdrop-filter: blur(12px))":
         nested
