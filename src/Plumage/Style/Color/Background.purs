@@ -31,15 +31,11 @@ blurredBackground col blurRadius =
 blurredBackground' ∷ { blurredCol ∷ Color, fallbackCol ∷ Color, blurRadius ∷ Int } → Style
 blurredBackground' { blurredCol, fallbackCol, blurRadius } =
   css
-    { "@supports (backdrop-filter: blur(12px))":
+    { background: str $ cssStringRGBA fallbackCol
+    , "@supports (backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))":
         nested
           $ css
               { background: str $ cssStringRGBA blurredCol
               , backdropFilter: str $ "blur(" <> show blurRadius <> "px)"
-              }
-    , "@supports not (backdrop-filter: blur(12px))":
-        nested
-          $ css
-              { background: str $ cssStringRGBA fallbackCol
               }
     }
