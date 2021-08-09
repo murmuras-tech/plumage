@@ -1,79 +1,77 @@
-module React.Aria.Button (useButton, UseButton, ButtonPropsImpl, PressHandlerImpl, PressEventImpl) where
+module React.Aria.Button (useButton, UseButton, ButtonPropsImpl, pressEvent, PressEventImpl) where
 
 import Prelude
 import Data.Nullable (Nullable)
 import Effect.Uncurried (EffectFn1, EffectFn2, runEffectFn2)
 import Foreign (Foreign, unsafeFromForeign, unsafeToForeign)
-import Prim.Row (class Lacks, class Union)
-import React.Basic.DOM (Props_button)
-import React.Basic.Events (EventHandler)
+import Foreign.Object (Object)
+import Prim.Row (class Union)
+import React.Basic.Events (EventFn, SyntheticEvent, EventHandler, unsafeEventFn)
 import React.Basic.Hooks (Hook, ReactComponent, Ref, unsafeHook)
+import Unsafe.Coerce (unsafeCoerce)
 import Untagged.Union (OneOf)
 import Web.DOM (Node)
 import Web.HTML (HTMLElement)
-import Foreign.Object (Object)
 
-foreign import data UseButton ∷ Type -> Type
+foreign import data UseButton ∷ Type → Type
 
-type PressEventImpl =
-  { type ∷ String
-  , pointerType ∷ String
-  , target ∷ HTMLElement
-  , shiftKey ∷ Boolean
-  , ctrlKey ∷ Boolean
-  , metaKey ∷ Boolean
-  }
+type PressEventImpl
+  = { type ∷ String
+    , pointerType ∷ String
+    , target ∷ HTMLElement
+    , shiftKey ∷ Boolean
+    , ctrlKey ∷ Boolean
+    , metaKey ∷ Boolean
+    }
 
-type PressHandlerImpl =
-  EffectFn1
-    PressEventImpl
-    Unit
+pressEvent ∷ EventFn SyntheticEvent PressEventImpl
+pressEvent = unsafeEventFn unsafeCoerce
 
-type ButtonPropsImpl =
-  ( elementType ∷ OneOf String (∀ a. ReactComponent a) -- button/a/div... 
-  , isDisabled ∷ Boolean
-  , onPress ∷ PressHandlerImpl
-  , onPressStart ∷ PressHandlerImpl
-  , onPressEnd ∷ PressHandlerImpl
-  , onPressUp ∷ PressHandlerImpl
-  , onPressChange ∷ EffectFn1 Boolean Unit
-  , preventFocusOnPress ∷ Boolean
-  , href ∷ String -- for `a` 
-  , target ∷ String -- for `a` 
-  , rel ∷ String -- for `a`
-  , "aria-expanded" ∷ Boolean
-  , "aria-haspopup" ∷ OneOf Boolean String
-  , "aria-controls" ∷ String
-  , "aria-pressed" ∷ Boolean
-  , type ∷ String -- button/submit/reset
-  , excludeFromTabOrder ∷ Boolean
-  , "aria-label" ∷ String
-  , "aria-labelledby" ∷ String
-  , "aria-describedby" ∷ String
-  , "aria-details" ∷ String
-  )
+type ButtonPropsImpl
+  = ( elementType ∷ OneOf String (∀ a. ReactComponent a) -- button/a/div... 
+    , isDisabled ∷ Boolean
+    , onPress ∷ EventHandler
+    , onPressStart ∷ EventHandler
+    , onPressEnd ∷ EventHandler
+    , onPressUp ∷ EventHandler
+    , onPressChange ∷ EffectFn1 Boolean Unit
+    , preventFocusOnPress ∷ Boolean
+    , href ∷ String -- for `a` 
+    , target ∷ String -- for `a` 
+    , rel ∷ String -- for `a`
+    , "aria-expanded" ∷ Boolean
+    , "aria-haspopup" ∷ OneOf Boolean String
+    , "aria-controls" ∷ String
+    , "aria-pressed" ∷ Boolean
+    , type ∷ String -- button/submit/reset
+    , excludeFromTabOrder ∷ Boolean
+    , "aria-label" ∷ String
+    , "aria-labelledby" ∷ String
+    , "aria-describedby" ∷ String
+    , "aria-details" ∷ String
+    )
 
-type ButtonPropsResult =
-  { _aria ∷ Object String
-  , disabled ∷ Boolean
-  , onBlur ∷ EventHandler
-  , onClick ∷ EventHandler
-  , onDragStart ∷ EventHandler
-  , onFocus ∷ EventHandler
-  , onKeyDown ∷ EventHandler
-  , onKeyUp ∷ EventHandler
-  , onMouseDown ∷ EventHandler
-  , onPointerDown ∷ EventHandler
-  , onPointerUp ∷ EventHandler
-  , tabIndex ∷ Int
-  , type ∷ String
-  }
+type ButtonPropsResult
+  = { _aria ∷ Object String
+    , disabled ∷ Boolean
+    , onBlur ∷ EventHandler
+    , onClick ∷ EventHandler
+    , onDragStart ∷ EventHandler
+    , onFocus ∷ EventHandler
+    , onKeyDown ∷ EventHandler
+    , onKeyUp ∷ EventHandler
+    , onMouseDown ∷ EventHandler
+    , onPointerDown ∷ EventHandler
+    , onPointerUp ∷ EventHandler
+    , tabIndex ∷ Int
+    , type ∷ String
+    }
 
 useButton ∷
   ∀ attrsIn attrsIn_.
-  Union attrsIn attrsIn_ ButtonPropsImpl =>
-  { | attrsIn } ->
-  Ref (Nullable Node) ->
+  Union attrsIn attrsIn_ ButtonPropsImpl ⇒
+  { | attrsIn } →
+  Ref (Nullable Node) →
   Hook UseButton { isPressed ∷ Boolean, buttonProps ∷ ButtonPropsResult }
 useButton props ref =
   unsafeHook
@@ -88,6 +86,6 @@ foreign import useButtonImpl ∷
     (Ref (Nullable Node))
     (Foreign)
 
-foreign import toDashedProps ∷ Foreign -> Foreign
+foreign import toDashedProps ∷ Foreign → Foreign
 
-foreign import fromDashedProps ∷ Foreign -> Foreign
+foreign import fromDashedProps ∷ Foreign → Foreign
