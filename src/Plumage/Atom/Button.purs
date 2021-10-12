@@ -58,6 +58,7 @@ mkButton = do
                 <> inlineBlock
                 <> pXY 0
                 <> mXY 0
+                <> props.containerCss
           , ref: containerRef
           , children:
               [ E.element rawButton
