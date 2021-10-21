@@ -24,3 +24,19 @@ outlines ds =
 
 outline ∷ String → JSX
 outline d = outlines [ d ]
+
+filled ∷ String → JSX
+filled d =
+  SVG.svg
+    { viewBox: "0 0 24 24"
+    , xmlns: "http://www.w3.org/2000/svg"
+    , xmlSpace: "preserve"
+    , stroke: "currentColor"
+    , children:
+        [ SVG.path
+            { fill: "currentColor"
+            , stroke: "none"
+            , d
+            }
+        ]
+    }
