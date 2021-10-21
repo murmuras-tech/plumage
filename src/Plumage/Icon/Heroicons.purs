@@ -1,28 +1,9 @@
 module Plumage.Icon.Heroicons where
 
 import Prelude
+import Plumage.Icon.Common (outline, outlines)
 import React.Basic (JSX)
 import React.Basic.DOM.SVG as SVG
-
-outlines ds =
-  SVG.svg
-    { viewBox: "0 0 24 24"
-    , xmlns: "http://www.w3.org/2000/svg"
-    , xmlSpace: "preserve"
-    , stroke: "currentColor"
-    , children:
-        ds
-          <#> \d →
-              SVG.path
-                { strokeLinecap: "round"
-                , strokeLinejoin: "round"
-                , strokeWidth: "2"
-                , d
-                }
-    }
-
-outline ∷ String → JSX
-outline d = outlines [ d ]
 
 menu = outline "M4 6h16M4 12h16M4 18h16" ∷ JSX
 cross = outline "M6 18L18 6M6 6l12 12" ∷ JSX
