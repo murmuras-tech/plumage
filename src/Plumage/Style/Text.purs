@@ -23,15 +23,15 @@ text3xl = textSized 1.875 2.25
 text4xl ∷ Style
 text4xl = textSized 2.25 2.5
 text5xl ∷ Style
-text5xl = textSized 3.0 1.0
+text5xl = textSized 3.0 3.0
 text6xl ∷ Style
-text6xl = textSized 3.75 1.0
+text6xl = textSized 3.75 3.75
 text7xl ∷ Style
-text7xl = textSized 4.5 1.0
+text7xl = textSized 4.5 4.5
 text8xl ∷ Style
-text8xl = textSized 6.0 1.0
+text8xl = textSized 6.0 6.0
 text9xl ∷ Style
-text9xl = textSized 8.0 1.0
+text9xl = textSized 8.0 8.0
 
 fontThin ∷ Style
 fontThin = css { fontWeight: int 100 }
