@@ -23,23 +23,24 @@ module Plumage.Style.Color.Tailwind
   , warmGray
   , white
   , yellow
+  , TailwindColor
   ) where
 
 import Color (Color)
 import Color as Color
 
-type TailwindColor =
-  { _100 ∷ Color
-  , _200 ∷ Color
-  , _300 ∷ Color
-  , _400 ∷ Color
-  , _50 ∷ Color
-  , _500 ∷ Color
-  , _600 ∷ Color
-  , _700 ∷ Color
-  , _800 ∷ Color
-  , _900 ∷ Color
-  }
+type TailwindColor
+  = { _100 ∷ Color
+    , _200 ∷ Color
+    , _300 ∷ Color
+    , _400 ∷ Color
+    , _50 ∷ Color
+    , _500 ∷ Color
+    , _600 ∷ Color
+    , _700 ∷ Color
+    , _800 ∷ Color
+    , _900 ∷ Color
+    }
 
 white ∷ Color
 white = Color.white
