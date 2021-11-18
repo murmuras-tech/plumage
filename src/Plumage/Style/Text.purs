@@ -1,7 +1,7 @@
 module Plumage.Style.Text where
 
 import Prelude
-import React.Basic.Emotion (Style, css, em, int, rem)
+import React.Basic.Emotion (Style, css, em, int, rem, str)
 
 textSized ∷ Number → Number → Style
 textSized fs lh = css { fontSize: fs # rem, lineHeight: lh # rem }
@@ -64,3 +64,12 @@ trackingWider ∷ Style
 trackingWider = css { letterSpacing: 0.05 # em }
 trackingWidest ∷ Style
 trackingWidest = css { letterSpacing: 0.1 # em }
+
+fontFamilyOrSans ∷ String → Style
+fontFamilyOrSans ff = css { fontFamily: str $ ff <> ", sans" }
+
+fontFamilyOrSerif ∷ String → Style
+fontFamilyOrSerif ff = css { fontFamily: str $ ff <> ", serif" }
+
+fontFamilyOrMono ∷ String → Style
+fontFamilyOrMono ff = css { fontFamily: str $ ff <> ", monospace" }
