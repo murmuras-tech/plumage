@@ -1,9 +1,7 @@
 module Plumage.Icon.Heroicons where
 
-import Prelude
 import Plumage.Icon.Common (outline, outlines)
 import React.Basic (JSX)
-import React.Basic.DOM.SVG as SVG
 
 menu = outline "M4 6h16M4 12h16M4 18h16" ∷ JSX
 cross = outline "M6 18L18 6M6 6l12 12" ∷ JSX
@@ -19,3 +17,5 @@ speakerphone = outline "M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 
 deviceMobile = outline "M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" ∷ JSX
 database = outline "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" ∷ JSX
 heart = outline "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" ∷ JSX
+exclamation = outline "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" :: JSX
+exclamationCircle = outline "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" :: JSX
