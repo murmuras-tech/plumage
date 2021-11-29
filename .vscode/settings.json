@@ -1,4 +1,27 @@
 {
   "editor.formatOnSave": true,
-  "purescript.addNpmPath": true
+  "purescript.addNpmPath": true,
+  "workbench.preferredDarkColorTheme": "Night Owl",
+  "workbench.preferredLightColorTheme": "Night Owl Light",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#650bc1",
+    "activityBar.activeBorder": "#1e1002",
+    "activityBar.background": "#650bc1",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#1e1002",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "sash.hoverBorder": "#650bc1",
+    "statusBar.background": "#4c0891",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#650bc1",
+    "statusBarItem.remoteBackground": "#4c0891",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#4c0891",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#4c089199",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "hsl(270,90%,30%)",
+  "workbench.colorTheme": "Night Owl Light"
 }
