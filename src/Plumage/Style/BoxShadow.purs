@@ -16,11 +16,11 @@ shadows ∷ Array String → Style
 shadows = shadow <<< intercalate ","
 
 mkShadow ∷
-  { blurRadius ∷ String
+  { blurRadius ∷ Int
   , col ∷ Color
-  , offsetX ∷ String
-  , offsetY ∷ String
-  , spreadRadius ∷ String
+  , offsetX ∷ Int
+  , offsetY ∷ Int
+  , spreadRadius ∷ Int
   } →
   String
 mkShadow { offsetX, offsetY, blurRadius, spreadRadius, col } =
