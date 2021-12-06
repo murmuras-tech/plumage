@@ -28,3 +28,7 @@ currencyEuro = outline "M14.121 15.536c-1.171 1.952-3.07 1.952-4.242 0-1.172-1.9
 
 emojiHappy = outline "M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" :: JSX
 emojiSad = outline "M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" :: JSX
+chevronRight = outline "M9 5l7 7-7 7" :: JSX
+chevronLeft = outline "M15 19l-7-7 7-7" :: JSX
+chevronDown = outline "M19 9l-7 7-7-7" :: JSX
+chevronUp = outline "M5 15l7-7 7 7" :: JSX
