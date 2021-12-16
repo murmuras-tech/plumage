@@ -11,6 +11,14 @@ import React.Basic.Hooks (Hook, ReactComponent, Ref, unsafeHook)
 import Untagged.Union (OneOf)
 import Web.DOM (Node)
 import Web.HTML (HTMLElement)
+import Effect (Effect)
+
+foreign import useIdImpl :: Effect String
+
+newtype UseId a = UseId a
+
+useId :: Hook UseId String
+useId = unsafeHook useIdImpl
 
 foreign import mergePropsImpl ∷ Array Foreign -> Foreign
 

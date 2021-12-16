@@ -1,6 +1,5 @@
 {
   "editor.formatOnSave": true,
-  "purescript.addNpmPath": true,
   "workbench.preferredDarkColorTheme": "Night Owl",
   "workbench.preferredLightColorTheme": "Night Owl Light",
   "workbench.colorCustomizations": {
