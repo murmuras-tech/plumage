@@ -7,7 +7,7 @@ import {
   OverlayProvider,
   OverlayContainer,
   DismissButton,
-  ModalProvider,
+  ModalProvider
 } from "@react-aria/overlays"
 
 export const useModalImpl = useModal
