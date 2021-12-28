@@ -1,8 +1,8 @@
-const ariaButton = require("@react-aria/button")
+import { useButton } from "@react-aria/button"
 
-exports.useButtonImpl = ariaButton.useButton
+export const useButtonImpl = useButton
 
-exports.toDashedProps = (psProps) => {
+export function toDashedProps(psProps) {
   const arias = psProps.hasOwnProperty("_aria")
     ? Object.fromEntries(
         Object.entries(psProps._aria).map(([key, value]) => [
@@ -25,7 +25,7 @@ exports.toDashedProps = (psProps) => {
   return reactProps
 }
 
-exports.fromDashedProps = (reactProps) => {
+export function fromDashedProps(reactProps) {
   const psProps = {}
   _aria = {}
   _data = {}

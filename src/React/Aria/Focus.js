@@ -1,5 +1,5 @@
-const focus = require("@react-aria/focus")
+import { FocusRing, FocusScope, useFocusRing } from "@react-aria/focus"
 
-exports.focusRingImpl = focus.FocusRing
-exports.focusScopeImpl = focus.FocusScope
-exports.useFocusRingImpl = focus.useFocusRing
+export const focusRingImpl = FocusRing
+export const focusScopeImpl = FocusScope
+export const useFocusRingImpl = useFocusRing

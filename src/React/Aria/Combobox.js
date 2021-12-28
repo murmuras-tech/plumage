@@ -1,3 +1,3 @@
-const combobox = require("@react-aria/combobox");
+import { useComboBox } from "@react-aria/combobox"
 
-exports.useComboBoxImpl = combobox.useComboBox;
+export const useComboBoxImpl = useComboBox
