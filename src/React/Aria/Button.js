@@ -7,7 +7,7 @@ export function toDashedProps(psProps) {
     ? Object.fromEntries(
         Object.entries(psProps._aria).map(([key, value]) => [
           "aria-" + key,
-          value,
+          value
         ])
       )
     : {}
@@ -15,7 +15,7 @@ export function toDashedProps(psProps) {
     ? Object.fromEntries(
         Object.entries(psProps._data).map(([key, value]) => [
           "data-" + key,
-          value,
+          value
         ])
       )
     : {}
