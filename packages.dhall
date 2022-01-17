@@ -99,5 +99,5 @@ in  upstream
 -------------------------------
 -}
 let upstream =
-      https://raw.githubusercontent.com/purescript/package-sets/master/src/packages.dhall sha256:5f10380b3ca7d3a32ea5c2b7535e4814a5e3f3590c70692f76e596d6ab0687b3
+  https://raw.githubusercontent.com/working-group-purescript-es/package-sets/main/packages.dhall sha256:a0bfa5f3099a11a80cda9c49c4e2479eda3d8152382183f67b49d2e780474249
 in  upstream

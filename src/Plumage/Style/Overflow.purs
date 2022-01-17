@@ -1,6 +1,6 @@
 module Plumage.Style.Overflow where
 
-import React.Basic.Emotion (Style, css, hidden)
+import React.Basic.Emotion (Style, css, hidden, str)
 
 overflowHidden ∷ Style
 overflowHidden = css { overflow: hidden }
@@ -10,3 +10,6 @@ overflowXHidden = css { overflowX: hidden }
 
 overflowYHidden ∷ Style
 overflowYHidden = css { overflowY: hidden }
+
+textOverflowEllipsis ∷ Style
+textOverflowEllipsis = css { textOverflow: str "ellipsis" }

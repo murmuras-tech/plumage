@@ -27,8 +27,8 @@ export function toDashedProps(psProps) {
 
 export function fromDashedProps(reactProps) {
   const psProps = {}
-  _aria = {}
-  _data = {}
+  let _aria = {}
+  let _data = {}
   Object.entries(reactProps.buttonProps).forEach(([key, value]) => {
     if (key.startsWith("aria-")) {
       _aria[key.slice(5)] = value

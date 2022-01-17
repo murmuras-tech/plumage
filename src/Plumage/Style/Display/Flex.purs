@@ -33,26 +33,45 @@ gap x = css { gap: px x }
 
 justifyStart ∷ Style
 justifyStart = css { justifyContent: flexStart }
+
 justifyEnd ∷ Style
 justifyEnd = css { justifyContent: flexEnd }
+
 justifyCenter ∷ Style
 justifyCenter = css { justifyContent: center }
+
 justifyBetween ∷ Style
 justifyBetween = css { justifyContent: spaceBetween }
+
 justifyAround ∷ Style
 justifyAround = css { justifyContent: spaceAround }
+
 justifyEvenly ∷ Style
 justifyEvenly = css { justifyContent: spaceEvenly }
 
 itemsStart ∷ Style
 itemsStart = css { alignItems: flexStart }
+
 itemsEnd ∷ Style
 itemsEnd = css { alignItems: flexEnd }
+
 itemsCenter ∷ Style
 itemsCenter = css { alignItems: center }
+
 itemsBetween ∷ Style
 itemsBetween = css { alignItems: spaceBetween }
+
 itemsAround ∷ Style
 itemsAround = css { alignItems: spaceAround }
+
 itemsEvenly ∷ Style
 itemsEvenly = css { alignItems: spaceEvenly }
+
+justifySelfCenter ∷ Style
+justifySelfCenter = css { justifySelf: center }
+
+justifySelfEnd ∷ Style
+justifySelfEnd = css { justifySelf: flexEnd }
+
+justifySelfStart ∷ Style
+justifySelfStart = css { justifySelf: flexStart }

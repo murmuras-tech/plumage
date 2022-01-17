@@ -142,13 +142,13 @@ primaryButtonStyle ∷ Style
 primaryButtonStyle =
   baseButtonStyle
     <> fold
-        [ background C.violet._600
-        , textCol C.white
-        , borderNone
-        , pY 12
-        , pX 28
-        , shadowDefaultCol C.violet._600
-        ]
+      [ background C.violet._600
+      , textCol C.white
+      , borderNone
+      , pY 12
+      , pX 28
+      , shadowDefaultCol C.violet._600
+      ]
 
 getBoundingBoxFromRef ∷ Ref (Nullable Node) → Effect (Maybe DOMRect)
 getBoundingBoxFromRef itemRef = do

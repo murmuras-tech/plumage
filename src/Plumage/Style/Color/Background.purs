@@ -10,11 +10,14 @@ background ∷ Color → Style
 background = css <<< { backgroundColor: _ } <<< color
 
 linearGradient ∷ Int → Array Color → Style
-linearGradient deg colors = css { background: bg }
+linearGradient deg colors = css { background: str bg }
+  where
+  bg = linearGradientString deg colors
+
+linearGradientString deg colors = bg
   where
   bg =
-    str
-      $ "linear-gradient("
+    "linear-gradient("
       <> show deg
       <> "deg, "
       <> intercalate "," (cssStringRGBA <$> colors)
