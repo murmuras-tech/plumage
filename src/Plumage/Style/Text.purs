@@ -98,3 +98,6 @@ fontFamilyOrSerif ff = css { fontFamily: str $ ff <> ", serif" }
 
 fontFamilyOrMono ∷ String → Style
 fontFamilyOrMono ff = css { fontFamily: str $ ff <> ", monospace" }
+
+underline :: Style
+underline = css { textDecoration: str "underline" }

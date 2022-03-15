@@ -6,12 +6,12 @@ import Prim.RowList (class RowToList)
 import React.Basic.Emotion (Style, StyleProperty, auto, baseline, borderBox, css, em, inherit, nested, none, percent, px, relative, solid, str)
 import Type.Row.Homogeneous (class HomogeneousRowList)
 
-nest ∷
-  ∀ r rl.
-  RowToList r rl ⇒
-  HomogeneousRowList rl StyleProperty ⇒
-  Record r →
-  StyleProperty
+nest
+  ∷ ∀ r rl
+  . RowToList r rl
+  ⇒ HomogeneousRowList rl StyleProperty
+  ⇒ Record r
+  → StyleProperty
 nest = nested <<< css
 
 globalStyles ∷ Style
