@@ -1,8 +1,11 @@
 module Plumage.Style.Color.Background where
 
 import Prelude
+
 import Color (Color, cssStringRGBA)
 import Data.Array (intercalate)
+import Data.Tuple (Tuple)
+import Data.Tuple.Nested ((/\))
 import Plumage.Style.Color.Util (withAlpha)
 import React.Basic.Emotion (Style, color, css, nested, str)
 
@@ -14,6 +17,25 @@ linearGradient deg colors = css { background: str bg }
   where
   bg = linearGradientString deg colors
 
+linearGradientStops ∷ Int → Array (Tuple Number Color) → Style
+linearGradientStops int cols =
+  css { background: str $ linearGradientStopsString int cols }
+
+linearGradientStopsString ∷ Int → Array (Tuple Number Color) → String
+linearGradientStopsString deg colors = bg
+  where
+  bg =
+    "linear-gradient("
+      <> show deg
+      <> "deg, "
+      <> intercalate ","
+        ( ( \(perc /\ col) →
+              cssStringRGBA col <> " " <> show perc <> "%"
+          ) <$> colors
+        )
+      <> ")"
+
+linearGradientString ∷ Int → Array Color → String
 linearGradientString deg colors = bg
   where
   bg =
@@ -31,7 +53,8 @@ blurredBackground col blurRadius =
     , blurRadius
     }
 
-blurredBackground' ∷ { blurredCol ∷ Color, fallbackCol ∷ Color, blurRadius ∷ Int } → Style
+blurredBackground'
+  ∷ { blurredCol ∷ Color, fallbackCol ∷ Color, blurRadius ∷ Int } → Style
 blurredBackground' { blurredCol, fallbackCol, blurRadius } =
   css
     { background: str $ cssStringRGBA fallbackCol
