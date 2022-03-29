@@ -12,7 +12,8 @@ to generate this file without the comments in this block.
 -}
 { name = "plumage"
 , dependencies =
-  [ "arrays"
+  [ "aff"
+  , "arrays"
   , "colors"
   , "console"
   , "debug"
@@ -25,6 +26,7 @@ to generate this file without the comments in this block.
   , "literals"
   , "maybe"
   , "nullable"
+  , "ordered-collections"
   , "prelude"
   , "psci-support"
   , "react-basic"
