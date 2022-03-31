@@ -1,6 +1,7 @@
 module Plumage.Style.Display.Flex where
 
-import React.Basic.Emotion (Style, center, column, css, flex, flexEnd, flexStart, int, nowrap, row, spaceAround, spaceBetween, spaceEvenly, str, wrap, px)
+import Prelude
+import React.Basic.Emotion (Style, center, column, css, flex, flexEnd, flexStart, nowrap, px, row, spaceAround, spaceBetween, spaceEvenly, str, wrap)
 
 flexCol ∷ Style
 flexCol =
@@ -17,7 +18,10 @@ flexRow =
     }
 
 flexGrow ∷ Int → Style
-flexGrow g = css { flexGrow: int g }
+flexGrow g = css { flexGrow: str (show g) }
+
+flexShrink ∷ Int → Style
+flexShrink g = css { flexShrink: str (show g) }
 
 flexWrap ∷ Style
 flexWrap = css { flexWrap: wrap }

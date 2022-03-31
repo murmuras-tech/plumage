@@ -18,6 +18,7 @@ module Plumage.Style.PseudoClasses
   , lastOfType
   , left
   , link
+  , nthChild
   , nthOfType
   , onlyChild
   , onlyOfType
@@ -144,7 +145,11 @@ nthOfType :: Int -> Style -> Style
 nthOfType n style = css_
   (Object.singleton ("&:nth-of-type(" <> show n <> ")") (nested style))
 
--- nthChild n= ":nth-child()
+nthChild :: Int -> Style -> Style
+nthChild n style = css_
+  (Object.singleton ("&:nth-child(" <> show n <> ")") (nested style))
+
+-- nthChild n = ":nth-child()
 -- not what = ":not()
 -- ":nth-last-child()
 -- ":nth-last-of-type()
