@@ -333,6 +333,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
 
   resultsContainerStyle =
     textCol TW.gray._700
+      <> background' (var ("--plm-popupBackground-colour"))
       <> pT 4
       <> pB 6
       <> pX 0
@@ -350,7 +351,6 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
     pX 8
       <> pY 2
       <> cursorPointer
-      <> background' (var ("--plm-popupBackground-colour"))
       <> P.focus
         ( background' (var "--plm-inputSelectOption-colour")
             <> textCol' (var "--plm-inputSelectOptionText-colour")
