@@ -1,92 +1,75 @@
 --| Tailwind.css inspired helper functions for speeding up styling elements
-module Plumage.Style where
+module Plumage.Style
+  ( module Plumage.Style.BlendMode
+  , module Plumage.Style.BlendMode.Types
+  , module Plumage.Style.Border
+  , module Plumage.Style.BoxShadow
+  , module Plumage.Style.Breakpoint
+  , module Plumage.Style.Color.Background
+  , module Plumage.Style.Color.Tailwind
+  , module Plumage.Style.Color.Text
+  , module Plumage.Style.Color.Util
+  , module Plumage.Style.Cursor
+  , module Plumage.Style.Display
+  , module Plumage.Style.Display.Flex
+  , module Plumage.Style.Display.Grid
+  , module Plumage.Style.Divide
+  , module Plumage.Style.Filter
+  , module Plumage.Style.Filter.Types
+  , module Plumage.Style.Global
+  , module Plumage.Style.Opacity
+  , module Plumage.Style.Input
+  , module Plumage.Style.Isolation
+  , module Plumage.Style.Opacity
+  , module Plumage.Style.Overflow
+  , module Plumage.Style.PointerEvents
+  , module Plumage.Style.Position
+  , module Plumage.Style.PseudoClasses
+  , module Plumage.Style.PseudoElements
+  , module Plumage.Style.Size
+  , module Plumage.Style.Text
+  , module Plumage.Style.Transform
+  , module Plumage.Style.Transition
+  , module Plumage.Style.UserSelect
+  , module Plumage.Style.Visibility
+  , module Plumage.Style.BoxModel
+  , module Plumage.Style.Nesting
+  ) where
 
+import Plumage.Style.BlendMode
+import Plumage.Style.BlendMode.Types
+import Plumage.Style.Border
+import Plumage.Style.BoxModel
+import Plumage.Style.BoxShadow
+import Plumage.Style.Breakpoint
+import Plumage.Style.Color.Background
+import Plumage.Style.Color.Tailwind
+import Plumage.Style.Color.Text
+import Plumage.Style.Color.Util
+import Plumage.Style.Cursor
+import Plumage.Style.Display
+import Plumage.Style.Display.Flex
+import Plumage.Style.Display.Grid
+import Plumage.Style.Divide
+import Plumage.Style.Filter
+import Plumage.Style.Filter.Types
+import Plumage.Style.Global
+import Plumage.Style.Input
+import Plumage.Style.Isolation
+import Plumage.Style.Nesting
+import Plumage.Style.Opacity
+import Plumage.Style.Opacity
+import Plumage.Style.Overflow
+import Plumage.Style.PointerEvents
+import Plumage.Style.Position
+import Plumage.Style.PseudoClasses
+import Plumage.Style.PseudoElements
+import Plumage.Style.Size
+import Plumage.Style.Text
+import Plumage.Style.Transform
+import Plumage.Style.Transition
+import Plumage.Style.UserSelect
+import Plumage.Style.Visibility
 import Prelude
-import React.Basic.Emotion (Style, StyleProperty, auto, css, px)
 
-pXY ∷ Int → Style
-pXY = css <<< { padding: _ } <<< px
-
-pT ∷ Int → Style
-pT = css <<< { paddingTop: _ } <<< px
-
-pB ∷ Int → Style
-pB = css <<< { paddingBottom: _ } <<< px
-
-pL ∷ Int → Style
-pL = css <<< { paddingLeft: _ } <<< px
-
-pR ∷ Int → Style
-pR = css <<< { paddingRight: _ } <<< px
-
-pX ∷ Int → Style
-pX n = pR n <> pL n
-
-pY ∷ Int → Style
-pY n = pT n <> pB n
-
-mXY ∷ Int → Style
-mXY = css <<< { margin: _ } <<< px
-
-mT ∷ Int → Style
-mT = css <<< { marginTop: _ } <<< px
-
-mB ∷ Int → Style
-mB = css <<< { marginBottom: _ } <<< px
-
-mL ∷ Int → Style
-mL = css <<< { marginLeft: _ } <<< px
-
-mR ∷ Int → Style
-mR = css <<< { marginRight: _ } <<< px
-
-mX ∷ Int → Style
-mX n = mR n <> mL n
-
-mXAuto ∷ Style
-mXAuto = mX' auto
-
-mY ∷ Int → Style
-mY n = mT n <> mB n
-
-p' ∷ StyleProperty → Style
-p' = css <<< { padding: _ }
-
-pT' ∷ StyleProperty → Style
-pT' = css <<< { paddingTop: _ }
-
-pB' ∷ StyleProperty → Style
-pB' = css <<< { paddingBottom: _ }
-
-pL' ∷ StyleProperty → Style
-pL' = css <<< { paddingLeft: _ }
-
-pR' ∷ StyleProperty → Style
-pR' = css <<< { paddingRight: _ }
-
-pX' ∷ StyleProperty → Style
-pX' n = pR' n <> pL' n
-
-pY' ∷ StyleProperty → Style
-pY' n = pT' n <> pB' n
-
-m' ∷ StyleProperty → Style
-m' = css <<< { margin: _ }
-
-mT' ∷ StyleProperty → Style
-mT' = css <<< { marginTop: _ }
-
-mB' ∷ StyleProperty → Style
-mB' = css <<< { marginBottom: _ }
-
-mL' ∷ StyleProperty → Style
-mL' = css <<< { marginLeft: _ }
-
-mR' ∷ StyleProperty → Style
-mR' = css <<< { marginRight: _ }
-
-mX' ∷ StyleProperty → Style
-mX' n = mR' n <> mL' n
-
-mY' ∷ StyleProperty → Style
-mY' n = mT' n <> mB' n
+import React.Downshift as Plumage.Style

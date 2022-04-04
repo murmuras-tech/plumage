@@ -5,10 +5,10 @@ import Prelude
 import React.Basic.Emotion (Style, css, nested, str)
 
 beforeElement ∷ Style → Style
-beforeElement style = css { "&::before": nested style, content: str "''" }
+beforeElement style = css { "&::before": nested $ (css { content: str "''" }) <> style }
 
 afterElement ∷ Style → Style
-afterElement style = css { "&::after": nested style, content: str "''" }
+afterElement style = css { "&::after": nested $ (css { content: str "''" }) <> style }
 
 content ∷ String → Style
 content c = css { content: str $ "'" <> c <> "'" }

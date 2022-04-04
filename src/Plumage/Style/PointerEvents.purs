@@ -4,3 +4,6 @@ import React.Basic.Emotion (Style, css, none)
 
 pointerEventsNone ∷ Style
 pointerEventsNone = css { pointerEvents: none }
+
+ignoreClicks ∷ Style
+ignoreClicks = pointerEventsNone

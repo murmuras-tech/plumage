@@ -79,3 +79,12 @@ justifySelfEnd = css { justifySelf: flexEnd }
 
 justifySelfStart ∷ Style
 justifySelfStart = css { justifySelf: flexStart }
+
+alignSelfCenter ∷ Style
+alignSelfCenter = css { alignSelf: center }
+
+alignSelfStart ∷ Style
+alignSelfStart = css { alignSelf: flexStart }
+
+alignSelfEnd ∷ Style
+alignSelfEnd = css { alignSelf: flexEnd }

@@ -8,7 +8,10 @@ module Plumage.Style.PseudoClasses
   , first
   , firstChild
   , firstOfType
+  , evenChild
+  , oddChild
   , focus
+  , focusWithin
   , fullscreen
   , hover
   , inRange
@@ -69,6 +72,12 @@ first style = css { "&:first": nested style }
 firstChild ∷ Style → Style
 firstChild style = css { "&:first-child": nested style }
 
+evenChild ∷ Style → Style
+evenChild s = css { "& > *:not(style):nth-of-type(even)": nested s }
+
+oddChild ∷ Style → Style
+oddChild s = css { "& > *:not(style):nth-of-type(odd)": nested s }
+
 firstOfType ∷ Style → Style
 firstOfType style = css { "&:first-of-type": nested style }
 
@@ -77,6 +86,9 @@ fullscreen style = css { "&:fullscreen": nested style }
 
 focus ∷ Style → Style
 focus style = css { "&:focus": nested style }
+
+focusWithin ∷ Style → Style
+focusWithin s = css { "&:focus-within": nested s }
 
 hover ∷ Style → Style
 hover style = css { "&:hover": nested style }

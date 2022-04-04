@@ -1,11 +1,15 @@
 module Plumage.Style.Color.Text where
 
 import Prelude
+
 import Color (Color)
-import React.Basic.Emotion (Style, color, css, str)
+import React.Basic.Emotion (Style, StyleProperty, color, css, str)
 
 textCol ∷ Color → Style
 textCol = css <<< { color: _ } <<< color
+
+textCol' ∷ StyleProperty → Style
+textCol' = css <<< { color: _ }
 
 textLeft ∷ Style
 textLeft = css { textAlign: str "left" }

@@ -7,10 +7,47 @@ import Data.Array (intercalate)
 import Data.Tuple (Tuple)
 import Data.Tuple.Nested ((/\))
 import Plumage.Style.Color.Util (withAlpha)
-import React.Basic.Emotion (Style, color, css, nested, str)
+import React.Basic (JSX)
+import React.Basic.DOM.Server (renderToStaticMarkup)
+import React.Basic.Emotion (Style, StyleProperty, color, css, nested, str)
 
 background ∷ Color → Style
 background = css <<< { backgroundColor: _ } <<< color
+
+background' ∷ StyleProperty → Style
+background' = css <<< { backgroundColor: _ }
+
+backgroundImage ∷ String → Style
+backgroundImage = backgroundImage' <<< str
+
+backgroundImage' ∷ StyleProperty → Style
+backgroundImage' = css <<< { backgroundImage: _ }
+
+svgBackgroundImage :: JSX -> Style
+svgBackgroundImage jsx = backgroundImage
+  $ "url('data:image/svg+xml;utf8,"
+      <> renderToStaticMarkup jsx
+      <> "')"
+
+backgroundPosition ∷ String → Style
+backgroundPosition bp = css { backgroundPosition: str bp }
+
+backgroundRepeat ∷ String → Style
+backgroundRepeat = css <<< { backgroundRepeat: _ } <<< str
+
+backgroundNoRepeat ∷ Style
+backgroundNoRepeat = backgroundRepeat "no-repeat"
+
+backgroundRepeatX ∷ Style
+backgroundRepeatX = backgroundRepeat "repeat-x"
+
+backgroundRepeatY ∷ Style
+backgroundRepeatY = backgroundRepeat "repeat-y"
+
+backgroundSize' ∷ StyleProperty → Style
+backgroundSize' = css <<< { backgroundSize: _ }
+
+backgroundSize = backgroundSize' <<< str
 
 linearGradient ∷ Int → Array Color → Style
 linearGradient deg colors = css { background: str bg }
