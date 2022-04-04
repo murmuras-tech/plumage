@@ -20,7 +20,7 @@ nest = nested <<< css
 
 variables ∷ Style
 variables = css
-  { "--plm-highlight-colour": color violet._400
+  { "--plm-highlight-colour": color violet._500
   , "--plm-highlightText-colour": color violet._50
   , "--plm-inputBorder-colour": str (cssStringRGBA transparent)
   , "--plm-inputBackground-colour": color gray._100
