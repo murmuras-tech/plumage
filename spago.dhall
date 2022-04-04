@@ -35,6 +35,7 @@ to generate this file without the comments in this block.
   , "ordered-collections"
   , "prelude"
   , "psci-support"
+  , "random"
   , "react-basic"
   , "react-basic-dom"
   , "react-basic-emotion"

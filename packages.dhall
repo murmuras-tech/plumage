@@ -507,6 +507,7 @@ in  upstream
       , "orders"
       , "prelude"
       , "psci-support"
+      , "random"
       , "react-basic"
       , "react-basic-dom"
       , "react-basic-hooks"
