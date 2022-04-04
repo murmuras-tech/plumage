@@ -19,7 +19,7 @@ module Plumage.Style.PseudoClasses
   , invalid
   , lastChild
   , lastOfType
-  , left
+  , pseudoLeft
   , link
   , nthChild
   , nthOfType
@@ -30,7 +30,7 @@ module Plumage.Style.PseudoClasses
   , readOnly
   , readWrite
   , required
-  , right
+  , pseudoRight
   , root
   , scope
   , target
@@ -108,8 +108,8 @@ lastChild style = css { "&:last-child": nested style }
 lastOfType ∷ Style → Style
 lastOfType style = css { "&:last-of-type": nested style }
 
-left ∷ Style → Style
-left style = css { "&:left": nested style }
+pseudoLeft ∷ Style → Style
+pseudoLeft style = css { "&:left": nested style }
 
 link ∷ Style → Style
 link style = css { "&:link": nested style }
@@ -135,8 +135,8 @@ readWrite style = css { "&:read-write": nested style }
 required ∷ Style → Style
 required style = css { "&:required": nested style }
 
-right ∷ Style → Style
-right style = css { "&:right": nested style }
+pseudoRight ∷ Style → Style
+pseudoRight style = css { "&:right": nested style }
 
 root ∷ Style → Style
 root style = css { "&:root": nested style }

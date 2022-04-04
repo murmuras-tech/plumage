@@ -7,7 +7,7 @@ module Plumage
   , module Plumage.Style
   ) where
 
-import Prelude
+import Prelude hiding (top, bottom)
 import Plumage.Animation
 import Plumage.Layer
 import Plumage.Style.PseudoElements

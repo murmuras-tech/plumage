@@ -3,6 +3,7 @@ module Plumage.Style
   ( module Plumage.Style.BlendMode
   , module Plumage.Style.BlendMode.Types
   , module Plumage.Style.Border
+  , module Plumage.Style.BoxModel
   , module Plumage.Style.BoxShadow
   , module Plumage.Style.Breakpoint
   , module Plumage.Style.Color.Background
@@ -17,9 +18,10 @@ module Plumage.Style
   , module Plumage.Style.Filter
   , module Plumage.Style.Filter.Types
   , module Plumage.Style.Global
-  , module Plumage.Style.Opacity
   , module Plumage.Style.Input
+  , module Plumage.Style.Inset
   , module Plumage.Style.Isolation
+  , module Plumage.Style.Nesting
   , module Plumage.Style.Opacity
   , module Plumage.Style.Overflow
   , module Plumage.Style.PointerEvents
@@ -32,8 +34,6 @@ module Plumage.Style
   , module Plumage.Style.Transition
   , module Plumage.Style.UserSelect
   , module Plumage.Style.Visibility
-  , module Plumage.Style.BoxModel
-  , module Plumage.Style.Nesting
   ) where
 
 import Plumage.Style.BlendMode
@@ -55,6 +55,7 @@ import Plumage.Style.Filter
 import Plumage.Style.Filter.Types
 import Plumage.Style.Global
 import Plumage.Style.Input
+import Plumage.Style.Inset
 import Plumage.Style.Isolation
 import Plumage.Style.Nesting
 import Plumage.Style.Opacity
@@ -70,6 +71,3 @@ import Plumage.Style.Transform
 import Plumage.Style.Transition
 import Plumage.Style.UserSelect
 import Plumage.Style.Visibility
-import Prelude
-
-import React.Downshift as Plumage.Style
