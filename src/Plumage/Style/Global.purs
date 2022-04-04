@@ -25,6 +25,7 @@ variables = css
   , "--plm-inputBackground-colour": color gray._100
   , "--plm-inputIcon-colour": color gray._400
   , "--plm-inputText-colour": color (gray._700 # darken 0.05)
+  , "--plm-popupBackground-colour": color white
   , "--plm-inputBorderActive-colour": var "--plm-highlight-colour"
   , "--plm-inputSelectOption-colour": color gray._200
   , "--plm-inputSelectOptionText-colour": color gray._800

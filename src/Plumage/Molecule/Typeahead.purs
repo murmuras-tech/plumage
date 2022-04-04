@@ -7,33 +7,28 @@ import Data.Array as Array
 import Data.Either (either)
 import Data.Int as Int
 import Data.Time.Duration (Milliseconds(..))
-import Debug (spy)
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
 import Framer.Motion (li, onHoverEnd, onHoverStart) as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, shadowLg, shadowMd, textCol', textSm, textXs)
+import Plumage (background', borderTop, shadowLg, textCol', textXs)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
 import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Style (pB, pT, pX, pY)
 import Plumage.Style.Border (border, borderCol, roundedDefault)
-import Plumage.Style.BoxShadow (shadowXxl)
 import Plumage.Style.Color.Background (background)
 import Plumage.Style.Color.Tailwind as TW
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
 import Plumage.Style.Display.Flex (flexCol, flexRow, gap, justifyBetween)
-import Plumage.Style.Inset (left, top) as P
-import Plumage.Style.Position (positionFixed)
 import Plumage.Style.Text (fontMedium, textSm)
 import Plumage.Style.Transition (transition)
 import Plumage.Util.HTML as H
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)
-import React.Basic.DOM (createPortal)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events as SE
 import React.Basic.Emotion (var)
@@ -49,7 +44,6 @@ import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (document)
 import Yoga.Block.Hook.Key (KeyCode)
 import Yoga.Block.Hook.Key as Key
-import Yoga.Block.Internal (findElementByIdInDocument)
 
 type Args a =
   { debounce ∷ Milliseconds
@@ -356,6 +350,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
     pX 8
       <> pY 2
       <> cursorPointer
+      <> background' (var ("--plm-popupBackground-colour"))
       <> P.focus
         ( background' (var "--plm-inputSelectOption-colour")
             <> textCol' (var "--plm-inputSelectOptionText-colour")
