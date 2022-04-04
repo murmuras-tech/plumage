@@ -4,7 +4,7 @@ import Prelude
 
 import Color (cssStringRGBA, darken)
 import Data.Array (intercalate)
-import Plumage.Style.Color.Tailwind (gray, violet)
+import Plumage.Style.Color.Tailwind (gray, violet, white)
 import Prim.RowList (class RowToList)
 import React.Basic.Emotion (Style, StyleProperty, auto, baseline, borderBox, color, css, em, inherit, nested, none, percent, px, relative, solid, str, var)
 import Type.Row.Homogeneous (class HomogeneousRowList)
