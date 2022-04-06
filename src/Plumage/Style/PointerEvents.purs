@@ -1,15 +1,15 @@
 module Plumage.Style.PointerEvents where
 
-import React.Basic.Emotion (Style, css, default, none)
+import React.Basic.Emotion (Style, auto, css, none)
 
 pointerEventsNone ∷ Style
 pointerEventsNone = css { pointerEvents: none }
 
-pointerEventsDefault ∷ Style
-pointerEventsDefault = css { pointerEvents: default }
+pointerEventsAuto ∷ Style
+pointerEventsAuto = css { pointerEvents: auto }
 
 ignoreClicks ∷ Style
 ignoreClicks = pointerEventsNone
 
 acceptClicks ∷ Style
-acceptClicks = pointerEventsDefault
+acceptClicks = pointerEventsAuto
