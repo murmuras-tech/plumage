@@ -366,7 +366,7 @@ usePopupBelow = React.do
     mempty
   let
     contentStyle = R.css
-      { position: "fixed"
+      { position: "absolute"
       , top: show (Int.round targetBoundingBox.bottom) <> "px"
       , left: show (Int.round targetBoundingBox.left) <> "px"
       , width: show (Int.round targetBoundingBox.width) <> "px"

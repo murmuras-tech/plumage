@@ -9,9 +9,10 @@ import Effect.Aff (delay)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Effect.Random (randomRange)
-import Plumage (globalStyles)
+import Plumage (background, globalStyles, gray, height', widthFull)
 import Plumage.Molecule.Typeahead (mkTypeahead)
 import Plumage.Molecule.Typeahead as Typeahead
+import Plumage.Util.HTML as H
 import React.Basic (JSX, fragment)
 import React.Basic.DOM as R
 import React.Basic.Emotion as E
@@ -26,16 +27,18 @@ typeahead = do
 
   pure $ fragment
     [ E.global </> { styles: globalStyles }
-    , typeaheadView </>
-        { onSelected: Console.log
-        , onDismiss: Console.log "dismissed"
-        , onRemoved: Console.log "removed"
-        , placeholder: "Search"
-        }
+    , H.div_ (height' (E.px 5000) <> widthFull <> background gray._400)
+        [ typeaheadView </>
+            { onSelected: Console.log
+            , onDismiss: Console.log "dismissed"
+            , onRemoved: Console.log "removed"
+            , placeholder: "Search"
+            }
+        ]
     , R.div
         { id: "cm"
         , style: R.css
-            { position: "fixed"
+            { position: "absolute"
             , top: "0"
             , left: "0"
             , width: "100%"
