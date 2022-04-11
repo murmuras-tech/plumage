@@ -327,8 +327,8 @@ dayRoundStyle = roundedXl <> widthFull <> heightFull <> boxSizingBorderBox
   <> pT 6
   <> transition "all 160ms ease-out"
   <> hover
-    ( background TW.coolGray._300
-        <> borderCol TW.coolGray._300
+    ( background TW.coolGray._100
+        <> borderCol TW.coolGray._100
         <> cursorPointer
         <> textCol TW.black
     )
