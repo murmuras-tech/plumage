@@ -45,6 +45,7 @@ data Action
   = DateSelected Date
   | ShowPreviousMonth
   | ShowNextMonth
+  | ShowMonthAndYear (Month /\ Year)
   | Open { currentDate :: Date, selectedDateʔ :: Maybe Date }
   | StartTransition TransitionDirection
   | Dismiss
@@ -55,7 +56,7 @@ derive instance Eq TransitionDirection
 
 type State = Maybe
   { selectedDateʔ ∷ Maybe Date
-  , currentDate :: Date
+  , currentDate ∷ Date
   , showingMonth ∷ (Month /\ Year)
   , transitioningʔ :: Maybe TransitionDirection
   }
@@ -66,6 +67,7 @@ defaultState = Nothing
 reduce ∷ State → Action → State
 reduce = case _, _ of
   Just s, DateSelected d -> Just (s { selectedDateʔ = Just d })
+  Just s, ShowMonthAndYear my -> Just (s { showingMonth = my, transitioningʔ = Nothing })
   Just s, ShowNextMonth -> Just (s { showingMonth = nextMonth s.showingMonth, transitioningʔ = Nothing })
   Just s, ShowPreviousMonth -> Just (s { showingMonth = previousMonth s.showingMonth, transitioningʔ = Nothing })
 
@@ -143,9 +145,9 @@ renderDate { dispatch, currentDate, selectedDateʔ, transitioningʔ, showingMont
         --             ]
         --         ]
         --     }
-                ,  R.text $ monthName showingMonth <>
-                        if showingYear == Date.year currentDate then ""
-                        else " " <> yearString showingYear
+        , R.text $ monthName showingMonth <>
+            if showingYear == Date.year currentDate then ""
+            else " " <> yearString showingYear
 
         , E.element R.button'
             { className: "plm-cal-btn"

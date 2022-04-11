@@ -30,6 +30,7 @@ datePicker = do
       show /\ setShow <- React.useState' true
       pure $ datePickerView
         { dateʔ
+        , showingMonthʔ: Nothing
         , show
         , onChange: setDate >=> (const (setShow false))
         }
