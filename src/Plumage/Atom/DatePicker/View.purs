@@ -94,7 +94,7 @@ mkDatePickerView = do
     let { state, dispatch } = props
     pure case state of
       Just s → renderDate ({ dispatch } `disjointUnion` s)
-      Nothing -> R.text "nope"
+      Nothing -> mempty
 
 renderDate
   ∷ { dispatch :: Action -> Effect Unit
