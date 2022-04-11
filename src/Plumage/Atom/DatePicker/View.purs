@@ -118,31 +118,35 @@ renderDate { dispatch, currentDate, selectedDateʔ, transitioningʔ, showingMont
             , onClick: handler_ (dispatch (StartTransition ToPreviousMonth))
             , children: [ Heroicons.chevronLeft ]
             }
-        , E.element R.button'
-            { className: "monthAndYear"
-            , css: monthAndYearStyle
-            , children:
-                [ R.div_
-                    [ R.text $ monthName showingMonth <>
+        -- , E.element R.button'
+        --     { className: "monthAndYear"
+        --     , css: monthAndYearStyle
+        --     , children:
+        --         [ R.div_
+        --             [ R.text $ monthName showingMonth <>
+        --                 if showingYear == Date.year currentDate then ""
+        --                 else " " <> yearString showingYear
+        --             ]
+        --         , H.div_
+        --             ( width 20
+        --                 <> height' (E.str "calc(100% - 6px)")
+        --                 <> flexRow
+        --                 <> itemsCenter
+        --                 <> justifyEnd
+        --                 <> border 0
+        --                 <> borderLeft 1
+        --                 <> borderSolid
+        --                 <> borderCol TW.gray._200
+        --             )
+        --             [ H.div_ (widthAndHeight 16)
+        --                 [ Heroicons.chevronDown ]
+        --             ]
+        --         ]
+        --     }
+                ,  R.text $ monthName showingMonth <>
                         if showingYear == Date.year currentDate then ""
                         else " " <> yearString showingYear
-                    ]
-                , H.div_
-                    ( width 20
-                        <> height' (E.str "calc(100% - 6px)")
-                        <> flexRow
-                        <> itemsCenter
-                        <> justifyEnd
-                        <> border 0
-                        <> borderLeft 1
-                        <> borderSolid
-                        <> borderCol TW.gray._200
-                    )
-                    [ H.div_ (widthAndHeight 16)
-                        [ Heroicons.chevronDown ]
-                    ]
-                ]
-            }
+
         , E.element R.button'
             { className: "plm-cal-btn"
             , css: monthChangeButtonStyle
@@ -329,7 +333,7 @@ dayRoundStyle = roundedXl <> widthFull <> heightFull <> boxSizingBorderBox
         <> textCol TW.black
     )
   <> border 3
-  <> borderCol TW.gray._50
+  <> borderCol TW.white
   <> borderSolid
 
 selectedDayStyle ∷ Style
@@ -361,7 +365,7 @@ dateContainerStyle = roundedLg <> shadowMd <> flexCol <> justifyCenter <> itemsC
   <> pX 12
   <> pT 16
   <> pB 12
-  <> background (TW.gray._50)
+  <> background (TW.white)
   <> textSm
   <> overflowXHidden
   <> border 1
