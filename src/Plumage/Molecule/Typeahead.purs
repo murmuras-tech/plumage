@@ -310,7 +310,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
         R.div'
           </* { css: resultsContainerStyle }
           />
-            [ R.ul' </ { ref: listRef } /> suggestionElements
+            [ R.ul' </* { css: overflowYScroll, ref: listRef } /> suggestionElements
             , H.div_ (pX 8)
                 [ loadingBar
                     { numberOfLights: 10
@@ -345,7 +345,6 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
       <> pT 4
       <> minHeight 60
       <> maxHeight' (33.3 # vh)
-      <> overflowYScroll
       <> pB 6
       <> pX 0
       <> flexCol
