@@ -81,11 +81,12 @@ mkPopOver { clickAwayId, containerId } = do
   React.component "popOver" \props → React.do
     let { hide, isVisible, content } = props
     bb /\ setBoundingBox ← React.useState' (zero ∷ DOMRect)
-    useEffectAlways do
-      bbʔ ← getBoundingBoxFromRef props.placementRef
-      for_ bbʔ \newBb →
-        unless (bb == newBb) do
-          setBoundingBox newBb
+    useEffect isVisible do
+      when isVisible do
+        bbʔ ← getBoundingBoxFromRef props.placementRef
+        for_ bbʔ \newBb →
+          unless (bb == newBb) do
+            setBoundingBox newBb
       mempty
 
     renderInPortal ← useRenderInPortal containerId
