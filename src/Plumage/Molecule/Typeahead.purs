@@ -301,10 +301,9 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
           /> [ renderSuggestion suggestion ]
 
       resultsContainer =
-        M.div
+        R.div'
           </*
             { css: resultsContainerStyle
-            , layout: M.layout true
             }
           />
             [ R.ul' </ { ref: listRef } /> suggestionElements
