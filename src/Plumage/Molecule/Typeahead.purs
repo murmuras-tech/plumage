@@ -50,6 +50,7 @@ type Args a =
   , renderSuggestion ∷ a → JSX
   , suggestionToText ∷ a → String
   , contextMenuLayerId :: String
+  , clickAwayId :: String
   }
 
 type Props a =
@@ -65,14 +66,16 @@ mkDefaultArgs
     , renderSuggestion ∷ a → JSX
     , suggestionToText ∷ a → String
     , contextMenuLayerId :: String
+    , clickAwayId :: String
     }
   → Args a
-mkDefaultArgs { loadSuggestions, renderSuggestion, suggestionToText, contextMenuLayerId } =
+mkDefaultArgs { loadSuggestions, renderSuggestion, suggestionToText, contextMenuLayerId, clickAwayId } =
   { debounce: Milliseconds 200.0
   , loadSuggestions
   , renderSuggestion
   , suggestionToText
   , contextMenuLayerId
+  , clickAwayId
   }
 
 mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
@@ -82,6 +85,7 @@ mkTypeahead args = do
       { renderSuggestion: args.renderSuggestion
       , suggestionToText: args.suggestionToText
       , contextMenuLayerId: args.contextMenuLayerId
+      , clickAwayId: args.clickAwayId
       }
   React.reactComponent "Typeahead" (render view)
   where
@@ -118,6 +122,7 @@ mkTypeaheadView
   . { renderSuggestion ∷ a → JSX
     , suggestionToText ∷ a → String
     , contextMenuLayerId :: String
+    , clickAwayId :: String
     }
   → Effect
       ( ReactComponent
@@ -132,10 +137,10 @@ mkTypeaheadView
           , placeholder ∷ String
           }
       )
-mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
+mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickAwayId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
-  popOver <- mkPopOverView { clickAwayId: contextMenuLayerId, containerId: contextMenuLayerId }
+  popOver <- mkPopOverView { clickAwayId: clickAwayId, containerId: contextMenuLayerId }
   React.reactComponent "TypeaheadView" React.do (render loadingBar popOver)
   where
 

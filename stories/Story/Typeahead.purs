@@ -36,6 +36,18 @@ typeahead = do
             }
         ]
     , R.div
+        { id: "clickaway"
+        , style: R.css
+            { position: "fixed"
+            , top: "0"
+            , left: "0"
+            , width: "100%"
+            , height: "100%"
+            , backgroundColor: "rgba(0, 0, 0, 0.00)"
+            , pointerEvents: "none"
+            }
+        }
+    , R.div
         { id: "cm"
         , style: R.css
             { position: "absolute"
@@ -64,4 +76,5 @@ typeaheadArgs = Typeahead.mkDefaultArgs
   , renderSuggestion: R.text
   , suggestionToText: identity
   , contextMenuLayerId: "cm"
+  , clickAwayId: "clickaway"
   }
