@@ -66,7 +66,28 @@ typeaheadArgs = Typeahead.mkDefaultArgs
       ms ← randomRange 200.0 2000.0 # liftEffect
       delay (ms # Milliseconds)
       pure $ Right
-        if s == "" then []
+        if s == "" then
+          [ "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          , "loads"
+          , "and loads"
+          ]
         else
           [ s <> " Beer"
           , s <> " Sausage"

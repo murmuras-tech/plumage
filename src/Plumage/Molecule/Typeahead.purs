@@ -11,7 +11,7 @@ import Effect.Exception (Error)
 import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, justifyEnd, maxHeight', minHeight, overflowYHidden, pX, roundedLg, shadowLg, textCol', textXs, transition)
+import Plumage (background', borderTop, flexGrow, height, itemsCenter, justifyEnd, maxHeight, maxHeight', minHeight, overflowYHidden, pX, roundedLg, shadowLg, textCol', textXs, transition, widthFull)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
@@ -310,7 +310,13 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
         R.div'
           </* { css: resultsContainerStyle }
           />
-            [ R.ul' </* { css: overflowYScroll, ref: listRef } /> suggestionElements
+            [ R.ul'
+                </*
+                  { css: overflowYScroll <> widthFull
+                      <> height 120
+                  , ref: listRef
+                  }
+                /> suggestionElements
             , H.div_ (pX 8)
                 [ loadingBar
                     { numberOfLights: 10
@@ -343,12 +349,12 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
     textCol TW.gray._700
       <> background' (var ("--plm-popupBackground-colour"))
       <> pT 4
-      <> minHeight 60
-      <> maxHeight' (33.3 # vh)
       <> pB 6
       <> pX 0
       <> flexCol
       <> justifyEnd
+      <> widthFull
+      <> itemsCenter
       <> gap 3
       <> roundedLg
       <> border 1
