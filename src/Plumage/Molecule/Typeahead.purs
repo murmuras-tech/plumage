@@ -5,18 +5,17 @@ import Yoga.Prelude.View
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Either (either)
-import Data.Int as Int
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
-import Framer.Motion (li, onHoverEnd, onHoverStart) as M
+import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, shadowLg, textCol', textXs)
+import Plumage (background', borderTop, justifyEnd, minHeight, pX, roundedLg, shadowLg, textCol', textXs, transition)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
-import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
+import Plumage.Atom.PopOver.View (mkPopOverView)
 import Plumage.Style (pB, pT, pX, pY)
 import Plumage.Style.Border (border, borderCol, roundedDefault)
 import Plumage.Style.Color.Background (background)
@@ -136,11 +135,13 @@ mkTypeaheadView
 mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
-  React.reactComponent "TypeaheadView" React.do (render loadingBar)
+  popOver <- mkPopOverView { clickAwayId: contextMenuLayerId, containerId: contextMenuLayerId }
+  React.reactComponent "TypeaheadView" React.do (render loadingBar popOver)
   where
 
   render
     loadingBar
+    popOver
     props@
       { input
       , setInput
@@ -155,8 +156,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
     prevSuggs /\ setPrevSuggs ← React.useState' []
     inputHasFocus /\ setInputHasFocus ← React.useState' false
     popupHasFocus /\ setPopupHasFocus ← React.useState' false
-    renderInPortal <- useRenderInPortal contextMenuLayerId
-    popup <- usePopupBelow
+    inputRef <- React.useRef null
     let focusIsWithin = inputHasFocus || popupHasFocus
     useEffect focusIsWithin do
       unless focusIsWithin do
@@ -181,7 +181,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
     let
       focusInput ∷ Effect Unit
       focusInput = do
-        maybeElem ← React.readRefMaybe popup.targetRef
+        maybeElem ← React.readRefMaybe inputRef
         for_ (maybeElem >>= HTMLElement.fromNode) focus
 
       blurCurrentItem ∷ Effect Unit
@@ -211,22 +211,21 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
           , onDismiss
           }
     let
-      inputBox =
-        H.div_ plumageInputContainerStyle
-          [ case focusIsWithin of
-              true →
-                renderInPortal
-                  ( R.div'
-                      </
-                        { style: popup.contentStyle
-                        , onFocus: focusWithinProps.onFocus
-                        , onBlur: focusWithinProps.onBlur
-                        }
-                      /> [ resultsContainer ]
-                  )
-              _ -> mempty
-          , inputElement
-          ]
+      inputBox = H.div_ plumageInputContainerStyle
+        [ inputElement
+        , popOver
+            { hide: blurCurrentItem
+            , placementRef: inputRef
+            , childʔ:
+                if not focusIsWithin then Nothing
+                else Just $ R.div'
+                  </
+                    { onFocus: focusWithinProps.onFocus
+                    , onBlur: focusWithinProps.onBlur
+                    }
+                  /> [ resultsContainer ]
+            }
+        ]
 
       inputElement = case input of
         Right x → R.div'
@@ -266,7 +265,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
             </*>
               { css: plumageInputStyle
               , id
-              , ref: popup.targetRef
+              , ref: inputRef
               , placeholder
               , className: "plm-input"
               , value
@@ -302,13 +301,19 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
           /> [ renderSuggestion suggestion ]
 
       resultsContainer =
-        R.div'
+        M.div
           </*
             { css: resultsContainerStyle
+            , layout: M.layout true
             }
           />
             [ R.ul' </ { ref: listRef } /> suggestionElements
-            , loadingBar { numberOfLights: 10, remoteData: suggestions }
+            , H.div_ (pX 8)
+                [ loadingBar
+                    { numberOfLights: 10
+                    , remoteData: suggestions
+                    }
+                ]
             ]
 
       suggestionElements =
@@ -335,12 +340,13 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
     textCol TW.gray._700
       <> background' (var ("--plm-popupBackground-colour"))
       <> pT 4
+      <> minHeight 60
       <> pB 6
       <> pX 0
       <> flexCol
+      <> justifyEnd
       <> gap 3
-      <> E.css { borderRadius: E.str "0 0 8px 8px" }
-      <> transition "all 200ms ease"
+      <> roundedLg
       <> border 1
       <> borderTop 0
       <> textXs
@@ -356,22 +362,6 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId } = do
             <> textCol' (var "--plm-inputSelectOptionText-colour")
             <> E.css { outline: E.none }
         )
-
-usePopupBelow = React.do
-  targetRef <- useRef null
-  targetBoundingBox /\ setTargetBoundingBox ← React.useState' zero
-  useEffectAlways do
-    bbʔ ← getBoundingBoxFromRef targetRef
-    unless (bbʔ == Just targetBoundingBox) do for_ bbʔ setTargetBoundingBox
-    mempty
-  let
-    contentStyle = R.css
-      { position: "absolute"
-      , top: show (Int.round targetBoundingBox.bottom) <> "px"
-      , left: show (Int.round targetBoundingBox.left) <> "px"
-      , width: show (Int.round targetBoundingBox.width) <> "px"
-      }
-  pure { targetRef, contentStyle }
 
 parseKey ∷ String → Maybe KeyCode
 parseKey = case _ of
