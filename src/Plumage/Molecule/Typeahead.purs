@@ -11,7 +11,7 @@ import Effect.Exception (Error)
 import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, flexGrow, height, itemsCenter, justifyEnd, maxHeight, maxHeight', minHeight, overflowHidden, overflowYHidden, pX, roundedLg, shadowLg, textCol', textXs, transition, widthFull)
+import Plumage (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
@@ -23,16 +23,15 @@ import Plumage.Style.Color.Tailwind as TW
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
 import Plumage.Style.Display.Flex (flexCol, flexRow, gap, justifyBetween)
-import Plumage.Style.Overflow (overflowScroll, overflowYScroll)
+import Plumage.Style.Overflow (overflowYScroll)
 import Plumage.Style.ScollBar (scrollBar)
 import Plumage.Style.Text (fontMedium, textSm)
-import Plumage.Style.Transition (transition)
 import Plumage.Util.HTML as H
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events as SE
-import React.Basic.Emotion (var, vh)
+import React.Basic.Emotion (var)
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
@@ -57,9 +56,10 @@ type Args a =
 
 type Props a =
   { onSelected ∷ a → Effect Unit
-  , onRemoved ∷ Effect Unit
+  , onRemoved ∷ a -> Effect Unit
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
+  , beforeInput :: JSX
   }
 
 mkDefaultArgs
@@ -92,18 +92,15 @@ mkTypeahead args = do
   React.reactComponent "Typeahead" (render view)
   where
   render view props = React.do
-    input /\ setInput ← React.useState' (Left "")
+    input /\ setInput ← React.useState' ""
     suggestions /\ setSuggestions ← React.useState' (RemoteData.NotAsked)
     activeIndex /\ updateActiveIndex ← React.useState Nothing
-    useAff (input # either Just (const Nothing)) do
-      case input of
-        Left value → do
-          delay args.debounce
-          setSuggestions RemoteData.Loading # liftEffect
-          result ← attempt (args.loadSuggestions value)
-          let rd = RemoteData.fromEither (join result)
-          setSuggestions rd # liftEffect
-        _ → mempty
+    useAff input do
+      delay args.debounce
+      setSuggestions RemoteData.Loading # liftEffect
+      result ← attempt (args.loadSuggestions input)
+      let rd = RemoteData.fromEither (join result)
+      setSuggestions rd # liftEffect
 
     pure
       $ view
@@ -117,7 +114,21 @@ mkTypeahead args = do
         , onRemoved: props.onRemoved
         , onDismiss: props.onDismiss
         , placeholder: props.placeholder
+        , beforeInput: props.beforeInput
         }
+
+type ViewProps a =
+  { activeIndex ∷ Maybe Int
+  , input ∷ String
+  , setInput ∷ String → Effect Unit
+  , suggestions ∷ RemoteData Error (Array a)
+  , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
+  , onSelected ∷ a → Effect Unit
+  , onRemoved ∷ a -> Effect Unit
+  , onDismiss ∷ Effect Unit
+  , placeholder ∷ String
+  , beforeInput :: JSX
+  }
 
 mkTypeaheadView
   ∷ ∀ a
@@ -126,30 +137,15 @@ mkTypeaheadView
     , contextMenuLayerId :: String
     , clickAwayId :: String
     }
-  → Effect
-      ( ReactComponent
-          { activeIndex ∷ Maybe Int
-          , input ∷ Either String a
-          , setInput ∷ Either String a → Effect Unit
-          , suggestions ∷ RemoteData Error (Array a)
-          , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
-          , onSelected ∷ a → Effect Unit
-          , onRemoved ∷ Effect Unit
-          , onDismiss ∷ Effect Unit
-          , placeholder ∷ String
-          }
-      )
+  → Effect (ReactComponent (ViewProps a))
 mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickAwayId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
   popOver <- mkPopOverView { clickAwayId: clickAwayId, containerId: contextMenuLayerId }
   React.reactComponent "TypeaheadView" React.do (render loadingBar popOver)
   where
-
-  render
-    loadingBar
-    popOver
-    props@
+  render loadingBar popOver (props :: ViewProps a) = React.do
+    let
       { input
       , setInput
       , suggestions
@@ -157,12 +153,13 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
       , activeIndex
       , updateActiveIndex
       , placeholder
-      } = React.do
+      } = props
     id ← useId
     listRef ← React.useRef null
     prevSuggs /\ setPrevSuggs ← React.useState' []
     inputHasFocus /\ setInputHasFocus ← React.useState' false
     popupHasFocus /\ setPopupHasFocus ← React.useState' false
+    inputContainerRef <- React.useRef null
     inputRef <- React.useRef null
     let focusIsWithin = inputHasFocus || popupHasFocus
     useEffect focusIsWithin do
@@ -203,7 +200,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
                 $ blur active
     let
       onSelected x = do
-        setInput (Right x)
+        setInput ""
         blurCurrentItem
         props.onSelected x
     -- Keyboard events
@@ -218,11 +215,11 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
           , onDismiss
           }
     let
-      inputBox = H.div_ plumageInputContainerStyle
+      inputBox = fragment
         [ inputElement
         , popOver
             { hide: blurCurrentItem
-            , placementRef: inputRef
+            , placementRef: inputContainerRef
             , childʔ:
                 if not focusIsWithin then Nothing
                 else Just $ R.div'
@@ -234,57 +231,31 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
             }
         ]
 
-      inputElement = case input of
-        Right x → R.div'
-          </*
-            { css: plumageInputContainerStyle
-            }
-          />
-            [ H.div_ flexRow
-                [ H.div_
-                    ( border 1 <> borderCol TW.gray._400
-                        <> background TW.gray._800
-                        <> textCol TW.gray._100
-                        <> fontMedium
-                        <> pX 4
-                        <> pY 2
-                        <> roundedDefault
-                        <> flexRow
-                        <> justifyBetween
-                        <> gap 4
-                        <> textSm
-                    )
-                    [ R.text (suggestionToText x)
-                    , R.button'
-                        </
-                          { onClick: handler preventDefault
-                              ( const do
-                                  setInput (Left "")
-                                  props.onRemoved
-                              )
-                          }
-                        /> [ R.text "×" ]
-                    ]
-                ]
-            ]
-        Left value →
-          R.input'
-            </*>
-              { css: plumageInputStyle
-              , id
-              , ref: inputRef
-              , placeholder
-              , className: "plm-input"
-              , value
-              , onChange: handler targetValue (traverse_ (setInput <<< Left))
-              , onKeyUp:
-                  handler
-                    SE.key
-                    \e → e >>= parseKey # traverse_ handleKeyDown
+      inputElement = R.div'
+        </*
+          { css: plumageInputContainerStyle
+          , ref: inputContainerRef
+          }
+        />
+          [ R.div_ [ props.beforeInput ]
+          , R.input'
+              </*>
+                { css: plumageInputStyle
+                , id
+                , ref: inputRef
+                , placeholder
+                , className: "plm-input"
+                , value: input
+                , onChange: handler targetValue (traverse_ setInput)
+                , onKeyUp:
+                    handler
+                      SE.key
+                      \e → e >>= parseKey # traverse_ handleKeyDown
 
-              , onFocus: focusProps.onFocus
-              , onBlur: focusProps.onBlur
-              }
+                , onFocus: focusProps.onFocus
+                , onBlur: focusProps.onBlur
+                }
+          ]
 
       wrapSuggestion i suggestion =
         M.li

@@ -31,8 +31,9 @@ typeahead = do
         [ typeaheadView </>
             { onSelected: Console.log
             , onDismiss: Console.log "dismissed"
-            , onRemoved: Console.log "removed"
+            , onRemoved: const $ Console.log "removed"
             , placeholder: "Search"
+            , beforeInput: R.text "hoho"
             }
         ]
     , R.div

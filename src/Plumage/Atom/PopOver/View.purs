@@ -3,7 +3,7 @@ module Plumage.Atom.PopOver.View where
 import Yoga.Prelude.View
 
 import Framer.Motion as M
-import Plumage (acceptClicks, overflowHidden, positionAbsolute)
+import Plumage (acceptClicks, positionAbsolute)
 import Plumage.Atom.Modal.View (mkClickAway)
 import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Prelude.Style (Style)
