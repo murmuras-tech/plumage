@@ -11,7 +11,7 @@ import Effect.Exception (Error)
 import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, justifyEnd, minHeight, pX, roundedLg, shadowLg, textCol', textXs, transition)
+import Plumage (background', borderTop, justifyEnd, maxHeight', minHeight, overflowYHidden, pX, roundedLg, shadowLg, textCol', textXs, transition)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
@@ -23,6 +23,7 @@ import Plumage.Style.Color.Tailwind as TW
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
 import Plumage.Style.Display.Flex (flexCol, flexRow, gap, justifyBetween)
+import Plumage.Style.Overflow (overflowScroll, overflowYScroll)
 import Plumage.Style.Text (fontMedium, textSm)
 import Plumage.Style.Transition (transition)
 import Plumage.Util.HTML as H
@@ -30,7 +31,7 @@ import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events as SE
-import React.Basic.Emotion (var)
+import React.Basic.Emotion (var, vh)
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
@@ -307,9 +308,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
 
       resultsContainer =
         R.div'
-          </*
-            { css: resultsContainerStyle
-            }
+          </* { css: resultsContainerStyle }
           />
             [ R.ul' </ { ref: listRef } /> suggestionElements
             , H.div_ (pX 8)
@@ -345,6 +344,8 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
       <> background' (var ("--plm-popupBackground-colour"))
       <> pT 4
       <> minHeight 60
+      <> maxHeight' (33.3 # vh)
+      <> overflowYScroll
       <> pB 6
       <> pX 0
       <> flexCol
