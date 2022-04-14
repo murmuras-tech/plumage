@@ -101,7 +101,7 @@ mkPopOver { clickAwayId, containerId } = do
               </*
                 { className: "popOver"
                 , css: popOverStyle
-                , style: R.css { left: bb.left, top: bb.bottom + 2.0 }
+                , style: R.css { left: bb.left, top: bb.bottom }
                 }
               />
                 [ content ]
