@@ -24,7 +24,7 @@ scrollBar { background, col, width, borderRadius, borderWidth } = css
       { width: str $ show width <> "px"
       }
   , "&::-webkit-scrollbar-track": nested $ css
-      { background: str $ cssStringRGBA col
+      { background: str $ cssStringRGBA background
       }
   , "&::-webkit-scrollbar-thumb": nested $ css
       { background: str $ cssStringRGBA col

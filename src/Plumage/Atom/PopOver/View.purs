@@ -3,8 +3,8 @@ module Plumage.Atom.PopOver.View where
 import Yoga.Prelude.View
 
 import Framer.Motion as M
+import Plumage (acceptClicks, overflowHidden, positionAbsolute)
 import Plumage.Atom.Modal.View (mkClickAway)
-import Plumage (acceptClicks, positionAbsolute)
 import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Prelude.Style (Style)
 import Plumage.Style.BoxShadow (shadow)
@@ -33,7 +33,9 @@ mkPopOverView ids = do
                 M.div
                   </
                     { key: "popOver"
-                    , style: R.css { transformOrigin: "top left" }
+                    , style: R.css
+                        { transformOrigin: "top left"
+                        }
                     , initial: M.initial $ R.css
                         { scale: 0.25
                         , opacity: 0
@@ -98,7 +100,7 @@ mkPopOver { clickAwayId, containerId } = do
               </*
                 { className: "popOver"
                 , css: popOverStyle
-                , style: R.css { left: bb.left, top: bb.bottom }
+                , style: R.css { left: bb.left, top: bb.bottom + 2.0 }
                 }
               />
                 [ content ]

@@ -11,7 +11,7 @@ import Effect.Exception (Error)
 import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, flexGrow, height, itemsCenter, justifyEnd, maxHeight, maxHeight', minHeight, overflowYHidden, pX, roundedLg, shadowLg, textCol', textXs, transition, widthFull)
+import Plumage (background', borderTop, flexGrow, height, itemsCenter, justifyEnd, maxHeight, maxHeight', minHeight, overflowHidden, overflowYHidden, pX, roundedLg, shadowLg, textCol', textXs, transition, widthFull)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
@@ -24,6 +24,7 @@ import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
 import Plumage.Style.Display.Flex (flexCol, flexRow, gap, justifyBetween)
 import Plumage.Style.Overflow (overflowScroll, overflowYScroll)
+import Plumage.Style.ScollBar (scrollBar)
 import Plumage.Style.Text (fontMedium, textSm)
 import Plumage.Style.Transition (transition)
 import Plumage.Util.HTML as H
@@ -313,7 +314,14 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
             [ R.ul'
                 </*
                   { css: overflowYScroll <> widthFull
-                      <> height 120
+                      <> height 230
+                      <> scrollBar
+                        { background: TW.gray._100
+                        , col: TW.gray._300
+                        , width: 6
+                        , borderRadius: 2
+                        , borderWidth: 1
+                        }
                   , ref: listRef
                   }
                 /> suggestionElements
@@ -348,7 +356,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
   resultsContainerStyle =
     textCol TW.gray._700
       <> background' (var ("--plm-popupBackground-colour"))
-      <> pT 4
+      <> pT 0
       <> pB 6
       <> pX 0
       <> flexCol
@@ -357,6 +365,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
       <> itemsCenter
       <> gap 3
       <> roundedLg
+      <> overflowHidden
       <> border 1
       <> borderTop 0
       <> textXs
