@@ -201,7 +201,6 @@ mkTypeaheadView
     let
       onSelected x = do
         setInput ""
-        blurCurrentItem
         props.onSelected x
     -- Keyboard events
     let
