@@ -29,7 +29,40 @@ typeahead = do
     [ E.global </> { styles: globalStyles }
     , H.div_ (height' (E.px 5000) <> widthFull <> background gray._400)
         [ typeaheadView </>
-            { onSelected: Console.log
+            { loadSuggestions: \s → do
+                ms ← randomRange 200.0 2000.0 # liftEffect
+                delay (ms # Milliseconds)
+                pure $ Right
+                  if s == "" then
+                    [ "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    , "loads"
+                    , "and loads"
+                    ]
+                  else
+                    [ s <> " Beer"
+                    , s <> " Sausage"
+                    , s <> " Meat"
+                    , "Wrong"
+                    ]
+            , renderSuggestion: R.text
+            , onSelected: Console.log
             , onDismiss: Console.log "dismissed"
             , onRemoved: const $ Console.log "removed"
             , placeholder: "Search"
@@ -63,40 +96,7 @@ typeahead = do
     ]
 
 typeaheadArgs = Typeahead.mkDefaultArgs
-  { loadSuggestions: \s → do
-      ms ← randomRange 200.0 2000.0 # liftEffect
-      delay (ms # Milliseconds)
-      pure $ Right
-        if s == "" then
-          [ "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          , "loads"
-          , "and loads"
-          ]
-        else
-          [ s <> " Beer"
-          , s <> " Sausage"
-          , s <> " Meat"
-          , "Wrong"
-          ]
-  , renderSuggestion: R.text
-  , suggestionToText: identity
+  { suggestionToText: identity
   , contextMenuLayerId: "cm"
   , clickAwayId: "clickaway"
   }

@@ -21,13 +21,13 @@
     "titleBar.inactiveBackground": "#4c089199",
     "titleBar.inactiveForeground": "#e7e7e799",
     "[Night Owl Light]": {
-       "tab.inactiveBackground": "#d9d9d7"
+      "tab.inactiveBackground": "#d9d9d7"
     },
     "[Night Owl]": {
-       "tab.inactiveBackground": "#000000",
-       "tab.activeBackground": "#1c2946"
+      "tab.inactiveBackground": "#000000",
+      "tab.activeBackground": "#1c2946"
     }
   },
   "peacock.color": "hsl(270,90%,30%)",
-  "workbench.colorTheme": "Night Owl"
+  "workbench.colorTheme": "Night Owl Light"
 }

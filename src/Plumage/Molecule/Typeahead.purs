@@ -4,7 +4,6 @@ import Yoga.Prelude.View
 
 import Data.Array ((!!))
 import Data.Array as Array
-import Data.Either (either)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
@@ -14,18 +13,16 @@ import Network.RemoteData as RemoteData
 import Plumage (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
 import Plumage (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
-import Plumage.Atom.Input.Input.Style (plumageInputContainerStyle, plumageInputStyle)
+import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
 import Plumage.Atom.PopOver.View (mkPopOverView)
 import Plumage.Style (pB, pT, pX, pY)
-import Plumage.Style.Border (border, borderCol, roundedDefault)
-import Plumage.Style.Color.Background (background)
+import Plumage.Style.Border (border, borderCol)
 import Plumage.Style.Color.Tailwind as TW
 import Plumage.Style.Color.Text (textCol)
 import Plumage.Style.Cursor (cursorPointer)
-import Plumage.Style.Display.Flex (flexCol, flexRow, gap, justifyBetween)
+import Plumage.Style.Display.Flex (flexCol, gap)
 import Plumage.Style.Overflow (overflowYScroll)
 import Plumage.Style.ScollBar (scrollBar)
-import Plumage.Style.Text (fontMedium, textSm)
 import Plumage.Util.HTML as H
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)
@@ -47,34 +44,34 @@ import Yoga.Block.Hook.Key as Key
 
 type Args a =
   { debounce ∷ Milliseconds
-  , loadSuggestions ∷ String → Aff (Either Error (Array a))
-  , renderSuggestion ∷ a → JSX
   , suggestionToText ∷ a → String
-  , contextMenuLayerId :: String
-  , clickAwayId :: String
+  , contextMenuLayerId ∷ String
+  , clickAwayId ∷ String
   }
 
 type Props a =
   { onSelected ∷ a → Effect Unit
-  , onRemoved ∷ a -> Effect Unit
+  , onRemoved ∷ a → Effect Unit
+  , renderSuggestion ∷ a → JSX
+  , loadSuggestions ∷ String → Aff (Either Error (Array a))
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
-  , beforeInput :: JSX
+  , beforeInput ∷ JSX
   }
 
+mkDefaultArgs ∷
+  ∀ a.
+  { suggestionToText ∷ a → String
+  , contextMenuLayerId ∷ String
+  , clickAwayId ∷ String
+  } →
+  Args a
 mkDefaultArgs
-  ∷ ∀ a
-  . { loadSuggestions ∷ String → Aff (Either Error (Array a))
-    , renderSuggestion ∷ a → JSX
-    , suggestionToText ∷ a → String
-    , contextMenuLayerId :: String
-    , clickAwayId :: String
-    }
-  → Args a
-mkDefaultArgs { loadSuggestions, renderSuggestion, suggestionToText, contextMenuLayerId, clickAwayId } =
+  { suggestionToText
+  , contextMenuLayerId
+  , clickAwayId
+  } =
   { debounce: Milliseconds 200.0
-  , loadSuggestions
-  , renderSuggestion
   , suggestionToText
   , contextMenuLayerId
   , clickAwayId
@@ -84,8 +81,7 @@ mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
   view ←
     mkTypeaheadView
-      { renderSuggestion: args.renderSuggestion
-      , suggestionToText: args.suggestionToText
+      { suggestionToText: args.suggestionToText
       , contextMenuLayerId: args.contextMenuLayerId
       , clickAwayId: args.clickAwayId
       }
@@ -98,7 +94,7 @@ mkTypeahead args = do
     useAff input do
       delay args.debounce
       setSuggestions RemoteData.Loading # liftEffect
-      result ← attempt (args.loadSuggestions input)
+      result ← attempt (props.loadSuggestions input)
       let rd = RemoteData.fromEither (join result)
       setSuggestions rd # liftEffect
 
@@ -115,6 +111,7 @@ mkTypeahead args = do
         , onDismiss: props.onDismiss
         , placeholder: props.placeholder
         , beforeInput: props.beforeInput
+        , renderSuggestion: props.renderSuggestion
         }
 
 type ViewProps a =
@@ -122,31 +119,34 @@ type ViewProps a =
   , input ∷ String
   , setInput ∷ String → Effect Unit
   , suggestions ∷ RemoteData Error (Array a)
+  , renderSuggestion ∷ a → JSX
   , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
   , onSelected ∷ a → Effect Unit
-  , onRemoved ∷ a -> Effect Unit
+  , onRemoved ∷ a → Effect Unit
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
-  , beforeInput :: JSX
+  , beforeInput ∷ JSX
   }
 
+mkTypeaheadView ∷
+  ∀ a.
+  { suggestionToText ∷ a → String
+  , contextMenuLayerId ∷ String
+  , clickAwayId ∷ String
+  } →
+  Effect (ReactComponent (ViewProps a))
 mkTypeaheadView
-  ∷ ∀ a
-  . { renderSuggestion ∷ a → JSX
-    , suggestionToText ∷ a → String
-    , contextMenuLayerId :: String
-    , clickAwayId :: String
-    }
-  → Effect (ReactComponent (ViewProps a))
-mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickAwayId } = do
+  { suggestionToText, contextMenuLayerId, clickAwayId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
-  popOver <- mkPopOverView { clickAwayId: clickAwayId, containerId: contextMenuLayerId }
+  popOver ← mkPopOverView
+    { clickAwayId: clickAwayId, containerId: contextMenuLayerId }
   React.reactComponent "TypeaheadView" React.do (render loadingBar popOver)
   where
-  render loadingBar popOver (props :: ViewProps a) = React.do
+  render loadingBar popOver (props ∷ ViewProps a) = React.do
     let
-      { input
+      { renderSuggestion
+      , input
       , setInput
       , suggestions
       , onDismiss
@@ -159,8 +159,8 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
     prevSuggs /\ setPrevSuggs ← React.useState' []
     inputHasFocus /\ setInputHasFocus ← React.useState' false
     popupHasFocus /\ setPopupHasFocus ← React.useState' false
-    inputContainerRef <- React.useRef null
-    inputRef <- React.useRef null
+    inputContainerRef ← React.useRef null
+    inputRef ← React.useRef null
     let focusIsWithin = inputHasFocus || popupHasFocus
     useEffect focusIsWithin do
       unless focusIsWithin do
@@ -233,7 +233,9 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
 
       inputElement = R.div'
         </*
-          { css: plumageInputContainerStyle
+          { css: plumageInputContainerStyle <>
+              if focusIsWithin then plumageInputContainerFocusWithinStyle
+              else mempty
           , ref: inputContainerRef
           }
         />
@@ -271,9 +273,7 @@ mkTypeaheadView { renderSuggestion, suggestionToText, contextMenuLayerId, clickA
             , onKeyDown: handler preventDefault mempty
             -- ^ disables scrolling with arrow keys
             , onKeyUp:
-                handler
-                  SE.key
-                  (\e → e >>= parseKey # traverse_ handleKeyDown)
+                handler SE.key (traverse_ handleKeyDown <<< (parseKey =<< _))
             , onClick: handler_ (onSelected suggestion)
             }
           /> [ renderSuggestion suggestion ]
@@ -361,17 +361,17 @@ parseKey = case _ of
   "Enter" → Just Key.Return
   _ → Nothing
 
-mkHandleKeyDown
-  ∷ ∀ a
-  . { activeIndex ∷ Maybe Int
-    , focusInput ∷ Effect Unit
-    , suggestions ∷ (Array a)
-    , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
-    , onSelected ∷ a → Effect Unit
-    , onDismiss ∷ Effect Unit
-    }
-  → KeyCode
-  → Effect Unit
+mkHandleKeyDown ∷
+  ∀ a.
+  { activeIndex ∷ Maybe Int
+  , focusInput ∷ Effect Unit
+  , suggestions ∷ (Array a)
+  , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
+  , onSelected ∷ a → Effect Unit
+  , onDismiss ∷ Effect Unit
+  } →
+  KeyCode →
+  Effect Unit
 mkHandleKeyDown
   { activeIndex
   , suggestions
