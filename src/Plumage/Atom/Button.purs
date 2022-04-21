@@ -33,7 +33,9 @@ import React.Basic.Emotion as E
 import React.Basic.Hooks (Ref, component, readRefMaybe, useEffectAlways)
 import React.Basic.Hooks as React
 import Web.DOM (Node)
-import Web.HTML.HTMLElement (DOMRect, HTMLElement, getBoundingClientRect)
+import Web.DOM.Element (DOMRect, getBoundingClientRect)
+import Yoga.Prelude.View (getBoundingBoxFromRef)
+import Web.HTML.HTMLElement (HTMLElement)
 import Web.HTML.HTMLElement as HTMLElement
 
 mkButton = do
@@ -149,13 +151,3 @@ primaryButtonStyle =
       , pX 28
       , shadowDefaultCol C.violet._600
       ]
-
-getBoundingBoxFromRef ∷ Ref (Nullable Node) → Effect (Maybe DOMRect)
-getBoundingBoxFromRef itemRef = do
-  htmlElem ← getHTMLElementFromRef itemRef
-  for htmlElem getBoundingClientRect
-
-getHTMLElementFromRef ∷ Ref (Nullable Node) → Effect (Maybe HTMLElement)
-getHTMLElementFromRef itemRef = do
-  maybeNode ← readRefMaybe itemRef
-  pure $ HTMLElement.fromNode =<< maybeNode
