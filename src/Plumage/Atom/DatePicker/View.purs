@@ -1,6 +1,7 @@
 module Plumage.Atom.DatePicker.View where
 
 import Plumage.Prelude.Style
+
 import Data.Date (Date, Day, Month(..), Weekday(..), Year)
 import Data.Date as Date
 import Data.Enum (enumFromTo, fromEnum)
@@ -12,20 +13,20 @@ import Framer.Motion as M
 import Literals.Undefined (undefined)
 import Plumage.Icon.Heroicons as Heroicons
 import Plumage.Style (mXY, pB, pR', pT, pX, pXY)
-import Plumage.Style.Border (border, borderCol, borderLeft, borderNone, borderSolid, boxSizingBorderBox, roundedFull, roundedLg, roundedMd, roundedXl)
+import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizingBorderBox, roundedFull, roundedLg, roundedMd, roundedXl)
 import Plumage.Style.BoxShadow (shadowMd, shadowSm)
 import Plumage.Style.Color.Background (background)
 import Plumage.Style.Color.Tailwind as TW
 import Plumage.Style.Color.Text (textCenter, textCol)
 import Plumage.Style.Color.Util (withAlpha)
 import Plumage.Style.Cursor (cursorPointer)
-import Plumage.Style.Display.Flex (flexCol, flexRow, itemsCenter, justifyBetween, justifyCenter, justifyEnd)
+import Plumage.Style.Display.Flex (flexCol, flexRow, itemsCenter, justifyBetween, justifyCenter)
 import Plumage.Style.Display.Grid (displayGrid, templateCols, templateRows)
 import Plumage.Style.Inset (bottom', right')
 import Plumage.Style.Overflow (overflowXHidden)
 import Plumage.Style.Position (positionAbsolute, positionRelative)
 import Plumage.Style.PseudoElements (afterElement)
-import Plumage.Style.Size (height, height', heightFull, width, widthAndHeight, widthFull)
+import Plumage.Style.Size (height, heightFull, width, widthAndHeight, widthFull)
 import Plumage.Style.Text (fontMedium, textDefault, textSm, textXs)
 import Plumage.Style.Transform (translate)
 import Plumage.Style.Transition (transition)
@@ -46,7 +47,7 @@ data Action
   | ShowPreviousMonth
   | ShowNextMonth
   | ShowMonthAndYear (Month /\ Year)
-  | Open { currentDate :: Date, selectedDateʔ :: Maybe Date }
+  | Open { currentDate ∷ Date, selectedDateʔ ∷ Maybe Date }
   | StartTransition TransitionDirection
   | Dismiss
 
@@ -58,7 +59,7 @@ type State = Maybe
   { selectedDateʔ ∷ Maybe Date
   , currentDate ∷ Date
   , showingMonth ∷ (Month /\ Year)
-  , transitioningʔ :: Maybe TransitionDirection
+  , transitioningʔ ∷ Maybe TransitionDirection
   }
 
 defaultState ∷ State
@@ -66,21 +67,29 @@ defaultState = Nothing
 
 reduce ∷ State → Action → State
 reduce = case _, _ of
-  Just s, DateSelected d -> Just (s { selectedDateʔ = Just d })
-  Just s, ShowMonthAndYear my -> Just (s { showingMonth = my, transitioningʔ = Nothing })
-  Just s, ShowNextMonth -> Just (s { showingMonth = nextMonth s.showingMonth, transitioningʔ = Nothing })
-  Just s, ShowPreviousMonth -> Just (s { showingMonth = previousMonth s.showingMonth, transitioningʔ = Nothing })
+  Just s, DateSelected d → Just (s { selectedDateʔ = Just d })
+  Just s, ShowMonthAndYear my → Just
+    (s { showingMonth = my, transitioningʔ = Nothing })
+  Just s, ShowNextMonth → Just
+    (s { showingMonth = nextMonth s.showingMonth, transitioningʔ = Nothing })
+  Just s, ShowPreviousMonth → Just
+    ( s
+        { showingMonth = previousMonth s.showingMonth
+        , transitioningʔ = Nothing
+        }
+    )
 
   -- User clicking very fast. Without this they have to wait for the transition
   -- to finish on every click
   Just s@{ transitioningʔ: Just running }, StartTransition transition
-    | running == transition -> case running of
-        ToNextMonth -> Just s { showingMonth = nextMonth s.showingMonth }
-        ToPreviousMonth -> Just s { showingMonth = previousMonth s.showingMonth }
-        _ -> Just s
-  Just s, StartTransition transition -> Just (s { transitioningʔ = Just transition })
-  Just _, Dismiss -> Nothing
-  Nothing, Open { currentDate, selectedDateʔ } -> do
+    | running == transition → case running of
+        ToNextMonth → Just s { showingMonth = nextMonth s.showingMonth }
+        ToPreviousMonth → Just s { showingMonth = previousMonth s.showingMonth }
+        _ → Just s
+  Just s, StartTransition transition → Just
+    (s { transitioningʔ = Just transition })
+  Just _, Dismiss → Nothing
+  Nothing, Open { currentDate, selectedDateʔ } → do
     let date = fromMaybe currentDate selectedDateʔ
     Just
       { selectedDateʔ
@@ -96,22 +105,30 @@ mkDatePickerView = do
     let { state, dispatch } = props
     pure case state of
       Just s → renderDate ({ dispatch } `disjointUnion` s)
-      Nothing -> mempty
+      Nothing → mempty
 
+renderDate ∷
+  { dispatch ∷ Action → Effect Unit
+  , currentDate ∷ Date
+  , selectedDateʔ ∷ Maybe Date
+  , showingMonth ∷ Month /\ Year
+  , transitioningʔ ∷ Maybe TransitionDirection
+  } →
+  JSX
 renderDate
-  ∷ { dispatch :: Action -> Effect Unit
-    , currentDate :: Date
-    , selectedDateʔ :: Maybe Date
-    , showingMonth :: Month /\ Year
-    , transitioningʔ :: Maybe TransitionDirection
-    }
-  → JSX
-renderDate { dispatch, currentDate, selectedDateʔ, transitioningʔ, showingMonth: showingMonth /\ showingYear } = do
+  { dispatch
+  , currentDate
+  , selectedDateʔ
+  , transitioningʔ
+  , showingMonth: showingMonth /\ showingYear
+  } = do
   let date = Date.canonicalDate showingYear showingMonth Bounded.bottom
   let nextMonth /\ nextYear = nextMonth (showingMonth /\ showingYear)
   let nextDate = Date.canonicalDate nextYear nextMonth Bounded.bottom
-  let previousMonth /\ previousYear = previousMonth (showingMonth /\ showingYear)
-  let previousDate = Date.canonicalDate previousYear previousMonth Bounded.bottom
+  let
+    previousMonth /\ previousYear = previousMonth (showingMonth /\ showingYear)
+  let
+    previousDate = Date.canonicalDate previousYear previousMonth Bounded.bottom
   H.div_ dateContainerStyle
     [ H.div_ titleAndControlsStyle
         [ E.element R.button'
@@ -161,7 +178,8 @@ renderDate { dispatch, currentDate, selectedDateʔ, transitioningʔ, showingMont
         , css: daysContainerStyle
         , children:
             [ H.div_ daysHeadingsStyle
-                ( enumFromTo Monday Sunday <#> (weekdayName >>> String.take 3 >>> \n -> R.div_ [ R.text n ])
+                ( enumFromTo Monday Sunday <#>
+                    (weekdayName >>> String.take 3 >>> \n → R.div_ [ R.text n ])
                 )
             , E.element M.div
                 { className: "the-days"
@@ -169,13 +187,16 @@ renderDate { dispatch, currentDate, selectedDateʔ, transitioningʔ, showingMont
                 , css: flexRow <> width (7 * size) <> height 260
                 , initial: M.initial $ R.css { x: "-100%" }
                 , animate: M.animate case transitioningʔ of
-                    Just ToNextMonth -> R.css { x: "-200%", transition: { duration: 0.2 } }
-                    Just ToPreviousMonth -> R.css { x: "0%", transition: { duration: 0.2 } }
-                    _ -> R.css { x: "-100%" }
-                , onAnimationComplete: M.onAnimationComplete case transitioningʔ of
-                    Just ToNextMonth → const $ dispatch ShowNextMonth
-                    Just ToPreviousMonth → const $ dispatch ShowPreviousMonth
-                    _ → mempty
+                    Just ToNextMonth → R.css
+                      { x: "-200%", transition: { duration: 0.2 } }
+                    Just ToPreviousMonth → R.css
+                      { x: "0%", transition: { duration: 0.2 } }
+                    _ → R.css { x: "-100%" }
+                , onAnimationComplete: M.onAnimationComplete
+                    case transitioningʔ of
+                      Just ToNextMonth → const $ dispatch ShowNextMonth
+                      Just ToPreviousMonth → const $ dispatch ShowPreviousMonth
+                      _ → mempty
                 , children:
                     [ H.div "days" daysStyle
                         $ renderMonthNumbers
@@ -207,82 +228,95 @@ renderDate { dispatch, currentDate, selectedDateʔ, transitioningʔ, showingMont
         }
     ]
 
-renderMonthNumbers { date, selectedDateʔ, currentDateʔ, showingMonth, dispatch } = do
-  let firstDay = firstMondayBefore $ setDay Bounded.bottom date
-  let lastDay = Date.adjust (41.0 # Days) firstDay # fromMaybe Bounded.top
-  ( ( enumFromTo firstDay lastDay
-    -- ( firstSundayAfter
-    --     $ setDay (lastDayOfMonth (Date.year date) (Date.month date)) date
-    -- )
+renderMonthNumbers ∷
+  { currentDateʔ ∷ Maybe Date
+  , date ∷ Date
+  , dispatch ∷ Action → Effect Unit
+  , selectedDateʔ ∷ Maybe Date
+  , showingMonth ∷ Month
+  } →
+  Array JSX
+renderMonthNumbers { date, selectedDateʔ, currentDateʔ, showingMonth, dispatch } =
+  do
+    let firstDay = firstMondayBefore $ setDay Bounded.bottom date
+    let lastDay = Date.adjust (41.0 # Days) firstDay # fromMaybe Bounded.top
+    ( ( enumFromTo firstDay lastDay
+      -- ( firstSundayAfter
+      --     $ setDay (lastDayOfMonth (Date.year date) (Date.month date)) date
+      -- )
+      )
+        <#> \(d ∷ Date) →
+          E.element R.button'
+            { className: "day"
+            , css: dayStyle <>
+                if Date.month d /= showingMonth then
+                  otherMonthDayStyle
+                else mempty
+            , children:
+                [ E.element M.div
+                    { css:
+                        dayRoundStyle
+                          <>
+                            ( if selectedDateʔ == Just d then
+                                selectedDayStyle
+                              else mempty
+                            )
+                          <>
+                            ( if Just d == currentDateʔ then currentDayStyle
+                              else mempty
+                            )
+                          <>
+                            if (fromEnum $ Date.day d) == 1 then oneDayStyle
+                            else mempty
+                    , initial:
+                        if selectedDateʔ == Just d then
+                          M.initial $ R.css { scale: 1.2 }
+                        else M.initial $ undefined
+                    , animate:
+                        M.animate $ R.css
+                          { scale: 1
+                          , transition:
+                              { type: "spring"
+                              , delay: 0.1
+                              , stiffness: 100
+                              , mass: 0.5
+                              , damping: 5
+                              }
+                          }
+                    , className: "cn"
+                    , children: [ R.text $ show $ fromEnum $ Date.day d ]
+                    }
+                ]
+            , onClick: handler_
+                if Date.month d < showingMonth then do
+                  dispatch (StartTransition ToPreviousMonth)
+                  dispatch (DateSelected d)
+                else if Date.month d > showingMonth then do
+                  dispatch (StartTransition ToNextMonth)
+                  dispatch (DateSelected d)
+                else do
+                  dispatch $ DateSelected d
+            }
     )
-      <#> \(d :: Date) ->
-        E.element R.button'
-          { className: "day"
-          , css: dayStyle <>
-              if Date.month d /= showingMonth then
-                otherMonthDayStyle
-              else mempty
-          , children:
-              [ E.element M.div
-                  { css:
-                      dayRoundStyle
-                        <>
-                          ( if selectedDateʔ == Just d then
-                              selectedDayStyle
-                            else mempty
-                          )
-                        <>
-                          ( if Just d == currentDateʔ then currentDayStyle
-                            else mempty
-                          )
-                        <> if (fromEnum $ Date.day d) == 1 then oneDayStyle else mempty
-                  , initial:
-                      if selectedDateʔ == Just d then
-                        M.initial $ R.css { scale: 1.2 }
-                      else M.initial $ undefined
-                  , animate:
-                      M.animate $ R.css
-                        { scale: 1
-                        , transition:
-                            { type: "spring"
-                            , delay: 0.1
-                            , stiffness: 100
-                            , mass: 0.5
-                            , damping: 5
-                            }
-                        }
-                  , className: "cn"
-                  , children: [ R.text $ show $ fromEnum $ Date.day d ]
-                  }
-              ]
-          , onClick: handler_
-              if Date.month d < showingMonth then do
-                dispatch (StartTransition ToPreviousMonth)
-                dispatch (DateSelected d)
-              else if Date.month d > showingMonth then do
-                dispatch (StartTransition ToNextMonth)
-                dispatch (DateSelected d)
-              else do
-                dispatch $ DateSelected d
-          }
-  )
 
+nextMonth ∷ Month /\ Year → Month /\ Year
 nextMonth (currentMonth /\ currentYear) = do
   let monthSuccʔ = Enum.succ currentMonth
   case monthSuccʔ of
-    Nothing -> Bounded.bottom /\ (Enum.succ currentYear # fromMaybe Bounded.top)
-    Just monthSucc -> monthSucc /\ currentYear
+    Nothing → Bounded.bottom /\ (Enum.succ currentYear # fromMaybe Bounded.top)
+    Just monthSucc → monthSucc /\ currentYear
 
+previousMonth ∷ Month /\ Year → Month /\ Year
 previousMonth (currentMonth /\ currentYear) = do
   let monthPredʔ = Enum.pred currentMonth
   case monthPredʔ of
-    Nothing -> Bounded.top /\ (Enum.pred currentYear # fromMaybe Bounded.bottom)
-    Just monthPred -> monthPred /\ currentYear
+    Nothing → Bounded.top /\ (Enum.pred currentYear # fromMaybe Bounded.bottom)
+    Just monthPred → monthPred /\ currentYear
 
 setDay ∷ Day → Date → Date
 setDay day date = Date.canonicalDate (Date.year date) (Date.month date) day
 
-firstMondayBefore :: Date -> Date
+firstMondayBefore ∷ Date → Date
 firstMondayBefore date = go date
   where
   go d =
@@ -290,14 +324,14 @@ firstMondayBefore date = go date
     else do
       Date.adjust (negateDuration (Days 1.0)) d # maybe d go
 
-firstSundayAfter :: Date -> Date
+firstSundayAfter ∷ Date → Date
 firstSundayAfter date = go date
   where
   go d =
     if Date.weekday d == Sunday then d
     else Date.adjust (Days 1.0) d # maybe d go
 
-commonDaysStyle :: Style
+commonDaysStyle ∷ Style
 commonDaysStyle = displayGrid <> templateCols "repeat(7, 1fr)" <> textCenter
 
 daysHeadingsStyle ∷ Style
@@ -318,7 +352,9 @@ padding ∷ Int
 padding = 2
 
 dayStyle ∷ Style
-dayStyle = width size <> height size <> borderNone <> E.css { background: E.none } <> mXY 0
+dayStyle = width size <> height size <> borderNone
+  <> E.css { background: E.none }
+  <> mXY 0
   <> pXY padding
   <> textCol (TW.gray._500 # darken 0.07)
   <> fontMedium
@@ -349,7 +385,8 @@ oneDayStyle ∷ Style
 oneDayStyle = pR' (E.str "1px")
 
 currentDayStyle ∷ Style
-currentDayStyle = positionRelative <> E.css { fontVariantNumeric: E.str "tabular-nums" }
+currentDayStyle = positionRelative
+  <> E.css { fontVariantNumeric: E.str "tabular-nums" }
   <> afterElement
     ( positionAbsolute <> bottom' (6 # E.px) <> right' (50.0 # E.percent)
         <> width 18
@@ -363,7 +400,8 @@ otherMonthDayStyle ∷ Style
 otherMonthDayStyle = textCol TW.gray._400
 
 dateContainerStyle ∷ Style
-dateContainerStyle = roundedLg <> shadowMd <> flexCol <> justifyCenter <> itemsCenter
+dateContainerStyle = roundedLg <> shadowMd <> flexCol <> justifyCenter
+  <> itemsCenter
   <> pX 12
   <> pT 16
   <> pB 12
@@ -423,25 +461,25 @@ yearString = fromEnum >>> show
 
 monthName ∷ Month → String
 monthName = case _ of
-  January -> "January"
-  February -> "February"
-  March -> "March"
-  April -> "April"
-  May -> "May"
-  June -> "June"
-  July -> "July"
-  August -> "August"
-  September -> "September"
-  October -> "October"
-  November -> "November"
-  December -> "December"
+  January → "January"
+  February → "February"
+  March → "March"
+  April → "April"
+  May → "May"
+  June → "June"
+  July → "July"
+  August → "August"
+  September → "September"
+  October → "October"
+  November → "November"
+  December → "December"
 
 weekdayName ∷ Weekday → String
 weekdayName = case _ of
-  Monday -> "Monday"
-  Tuesday -> "Tuesday"
-  Wednesday -> "Wednesday"
-  Thursday -> "Thursday"
-  Friday -> "Friday"
-  Saturday -> "Saturday"
-  Sunday -> "Sunday"
+  Monday → "Monday"
+  Tuesday → "Tuesday"
+  Wednesday → "Wednesday"
+  Thursday → "Thursday"
+  Friday → "Friday"
+  Saturday → "Saturday"
+  Sunday → "Sunday"

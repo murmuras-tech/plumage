@@ -4,7 +4,6 @@ import Plumage.Prelude.Style
 
 import Plumage.Atom.Input.Input.Style (plumageInputStyle)
 import React.Basic.DOM.SVG as SVG
-import Yoga.Block.Internal.CSS (transparent)
 
 plumageSelectStyle ∷ Style
 plumageSelectStyle =

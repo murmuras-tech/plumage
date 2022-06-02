@@ -73,7 +73,7 @@ fontLight = css { fontWeight: int 300 }
 fontNormal ∷ Style
 fontNormal = css { fontWeight: int 400 }
 
-fontSemiMedium :: Style
+fontSemiMedium ∷ Style
 fontSemiMedium = css { fontWeight: int 450 }
 
 fontMedium ∷ Style
@@ -121,8 +121,8 @@ fontFamilyOrSerif ff = css { fontFamily: str $ ff <> ", serif" }
 fontFamilyOrMono ∷ String → Style
 fontFamilyOrMono ff = css { fontFamily: str $ ff <> ", monospace" }
 
-underline :: Style
+underline ∷ Style
 underline = css { textDecoration: str "underline" }
 
-textTransformUppercase :: Style
+textTransformUppercase ∷ Style
 textTransformUppercase = css { textTransform: str "uppercase" }

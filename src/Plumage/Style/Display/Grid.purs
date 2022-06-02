@@ -1,7 +1,5 @@
 module Plumage.Style.Display.Grid where
 
-import Prelude
-
 import React.Basic.Emotion (Style, css, grid, str)
 
 displayGrid ∷ Style

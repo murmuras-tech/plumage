@@ -23,7 +23,7 @@ backgroundImage = backgroundImage' <<< str
 backgroundImage' ∷ StyleProperty → Style
 backgroundImage' = css <<< { backgroundImage: _ }
 
-svgBackgroundImage :: JSX -> Style
+svgBackgroundImage ∷ JSX → Style
 svgBackgroundImage jsx = backgroundImage
   $ "url('data:image/svg+xml;utf8,"
       <> renderToStaticMarkup jsx
@@ -47,6 +47,7 @@ backgroundRepeatY = backgroundRepeat "repeat-y"
 backgroundSize' ∷ StyleProperty → Style
 backgroundSize' = css <<< { backgroundSize: _ }
 
+backgroundSize ∷ String → Style
 backgroundSize = backgroundSize' <<< str
 
 linearGradient ∷ Int → Array Color → Style
@@ -90,8 +91,8 @@ blurredBackground col blurRadius =
     , blurRadius
     }
 
-blurredBackground'
-  ∷ { blurredCol ∷ Color, fallbackCol ∷ Color, blurRadius ∷ Int } → Style
+blurredBackground' ∷
+  { blurredCol ∷ Color, fallbackCol ∷ Color, blurRadius ∷ Int } → Style
 blurredBackground' { blurredCol, fallbackCol, blurRadius } =
   css
     { background: str $ cssStringRGBA fallbackCol

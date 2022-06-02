@@ -81,8 +81,7 @@ mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
   view ←
     mkTypeaheadView
-      { suggestionToText: args.suggestionToText
-      , contextMenuLayerId: args.contextMenuLayerId
+      { contextMenuLayerId: args.contextMenuLayerId
       , clickAwayId: args.clickAwayId
       }
   React.reactComponent "Typeahead" (render view)
@@ -130,13 +129,12 @@ type ViewProps a =
 
 mkTypeaheadView ∷
   ∀ a.
-  { suggestionToText ∷ a → String
-  , contextMenuLayerId ∷ String
+  { contextMenuLayerId ∷ String
   , clickAwayId ∷ String
   } →
   Effect (ReactComponent (ViewProps a))
 mkTypeaheadView
-  { suggestionToText, contextMenuLayerId, clickAwayId } = do
+  { contextMenuLayerId, clickAwayId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
   popOver ← mkPopOverView

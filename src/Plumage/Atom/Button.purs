@@ -1,14 +1,12 @@
 module Plumage.Atom.Button where
 
 import Prelude
+
 import Data.Array (fold)
-import Data.Maybe (Maybe)
 import Data.Monoid (guard)
-import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
-import Data.Traversable (for, for_)
+import Data.Traversable (for_)
 import Data.Tuple.Nested ((/\))
-import Effect (Effect)
 import Foreign.Object as Object
 import Framer.Motion as M
 import Plumage.Layer as Layer
@@ -22,22 +20,28 @@ import Plumage.Style.Cursor (cursorPointer)
 import Plumage.Style.Display (inlineBlock)
 import Plumage.Style.Opacity (opacity)
 import Plumage.Style.Position (positionRelative, positionAbsolute)
-import Plumage.Style.Size (height, width)
-import React.Aria.Button (useButton)
+import Prim.Row (class Union)
+import React.Aria.Button (ButtonPropsImpl, useButton)
 import React.Aria.Focus (useFocusRing)
 import React.Aria.Utils (mergeProps)
+import React.Basic (JSX)
 import React.Basic.DOM (css, unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Emotion (Style)
 import React.Basic.Emotion as E
-import React.Basic.Hooks (Ref, component, readRefMaybe, useEffectAlways)
+import React.Basic.Hooks (Component, component, useEffectAlways)
 import React.Basic.Hooks as React
-import Web.DOM (Node)
-import Web.DOM.Element (DOMRect, getBoundingClientRect)
 import Yoga.Prelude.View (getBoundingBoxFromRef)
-import Web.HTML.HTMLElement (HTMLElement)
-import Web.HTML.HTMLElement as HTMLElement
 
+mkButton ∷
+  ∀ attrsIn69 attrsIn_70.
+  Union attrsIn69 attrsIn_70 ButtonPropsImpl ⇒
+  Component
+    { buttonProps ∷ Record attrsIn69
+    , children ∷ Array JSX
+    , containerCss ∷ Style
+    , css ∷ Style
+    }
 mkButton = do
   rawButton ← unsafeCreateDOMComponent "button"
   component "Button" \props → React.do

@@ -9,7 +9,6 @@ import React.Basic.Hooks (Component)
 import React.Basic.Hooks as React
 import Yoga ((</*>))
 import Yoga.Block.Atom.Input.Hook.UseTypingPlaceholders (useTypingPlaceholders)
-import Yoga.Block.Internal (maybeToOp, opToMaybe, (<>?))
 import Yoga.Prelude.View (handler, targetValue)
 
 type InputProps =

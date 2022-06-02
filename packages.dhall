@@ -1,106 +1,6 @@
-{-
-Welcome to your new Dhall package-set!
-
-Below are instructions for how to edit this file for most use
-cases, so that you don't need to know Dhall to use it.
-
-## Use Cases
-
-Most will want to do one or both of these options:
-1. Override/Patch a package's dependency
-2. Add a package not already in the default package set
-
-This file will continue to work whether you use one or both options.
-Instructions for each option are explained below.
-
-### Overriding/Patching a package
-
-Purpose:
-- Change a package's dependency to a newer/older release than the
-    default package set's release
-- Use your own modified version of some dependency that may
-    include new API, changed API, removed API by
-    using your custom git repo of the library rather than
-    the package set's repo
-
-Syntax:
-where `entityName` is one of the following:
-- dependencies
-- repo
-- version
--------------------------------
-let upstream = --
-in  upstream
-  with packageName.entityName = "new value"
--------------------------------
-
-Example:
--------------------------------
-let upstream = --
-in  upstream
-  with halogen.version = "master"
-  with halogen.repo = "https://example.com/path/to/git/repo.git"
-
-  with halogen-vdom.version = "v4.0.0"
-  with halogen-vdom.dependencies = [ "extra-dependency" ] # halogen-vdom.dependencies
--------------------------------
-
-### Additions
-
-Purpose:
-- Add packages that aren't already included in the default package set
-
-Syntax:
-where `<version>` is:
-- a tag (i.e. "v4.0.0")
-- a branch (i.e. "master")
-- commit hash (i.e. "701f3e44aafb1a6459281714858fadf2c4c2a977")
--------------------------------
-let upstream = --
-in  upstream
-  with new-package-name =
-    { dependencies =
-       [ "dependency1"
-       , "dependency2"
-       ]
-    , repo =
-       "https://example.com/path/to/git/repo.git"
-    , version =
-        "<version>"
-    }
--------------------------------
-
-Example:
--------------------------------
-let upstream = --
-in  upstream
-  with benchotron =
-      { dependencies =
-          [ "arrays"
-          , "exists"
-          , "profunctor"
-          , "strings"
-          , "quickcheck"
-          , "lcg"
-          , "transformers"
-          , "foldable-traversable"
-          , "exceptions"
-          , "node-fs"
-          , "node-buffer"
-          , "node-readline"
-          , "datetime"
-          , "now"
-          ]
-      , repo =
-          "https://github.com/hdgarrood/purescript-benchotron.git"
-      , version =
-          "v7.0.0"
-      }
--------------------------------
--}
 let upstream =
-      https://raw.githubusercontent.com/purescript/package-sets/prepare-0.15/src/packages.dhall
-        sha256:b1c6d06132b7cbf1e93b1e5343044fba1604b50bfbe02d8f80a3002e71569c59
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.2-20220531/packages.dhall
+        sha256:278d3608439187e51136251ebf12fabda62d41ceb4bec9769312a08b56f853e3
 
 in  upstream
   with playwright =
@@ -189,24 +89,6 @@ in  upstream
     , repo =
         "https://github.com/working-group-purescript-es/purescript-stringutils.git"
     , version = "es-modules"
-    }
-  with routing-duplex =
-    { dependencies =
-      [ "arrays"
-      , "control"
-      , "either"
-      , "js-uri"
-      , "lazy"
-      , "numbers"
-      , "prelude"
-      , "profunctor"
-      , "record"
-      , "strings"
-      , "typelevel-prelude"
-      ]
-    , repo =
-        "https://github.com/working-group-purescript-es/purescript-routing-duplex.git"
-    , version = "v0.15.0-update"
     }
   with plumage =
     { dependencies =
@@ -416,24 +298,6 @@ in  upstream
         "https://github.com/working-group-purescript-es/purescript-stringutils.git"
     , version = "es-modules"
     }
-  with routing-duplex =
-    { dependencies =
-      [ "arrays"
-      , "control"
-      , "either"
-      , "js-uri"
-      , "lazy"
-      , "numbers"
-      , "prelude"
-      , "profunctor"
-      , "record"
-      , "strings"
-      , "typelevel-prelude"
-      ]
-    , repo =
-        "https://github.com/working-group-purescript-es/purescript-routing-duplex.git"
-    , version = "v0.15.0-update"
-    }
   with web-router =
     { dependencies =
       [ "aff"
@@ -450,7 +314,7 @@ in  upstream
   with framer-motion.version = "24dc0a89dd65458b768f3731c886f9911898788d"
   with visx =
     { repo = "https://github.com/i-am-the-slime/purescript-visx.git"
-    , version = "es-modules"
+    , version = "d79d4485a3abde28e0573da0384f29fe894ab253"
     , dependencies =
       [ "arrays"
       , "console"
@@ -699,21 +563,6 @@ in  upstream
       , "tuples"
       , "typelevel-prelude"
       ]
-    }
-  with variant =
-    { dependencies =
-      [ "enums"
-      , "lists"
-      , "maybe"
-      , "partial"
-      , "prelude"
-      , "record"
-      , "tuples"
-      , "unsafe-coerce"
-      ]
-    , repo =
-        "https://github.com/working-group-purescript-es/purescript-variant.git"
-    , version = "v0.15.0-update"
     }
   with framer-motion.version = "24dc0a89dd65458b768f3731c886f9911898788d"
   with visx =
