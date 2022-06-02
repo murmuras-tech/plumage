@@ -1,24 +1,42 @@
 module Plumage.Style.Global where
 
 import Prelude
-import Data.Array (intercalate)
-import Prim.RowList (class RowToList)
-import React.Basic.Emotion (Style, StyleProperty, auto, baseline, borderBox, css, em, inherit, nested, none, percent, px, relative, solid, str)
-import Type.Row.Homogeneous (class HomogeneousRowList)
 
-nest ∷
-  ∀ r rl.
-  RowToList r rl ⇒
-  HomogeneousRowList rl StyleProperty ⇒
-  Record r →
-  StyleProperty
+import Color (cssStringRGBA, darken)
+import Data.Array (intercalate)
+import Plumage.Style.Color.Tailwind (gray, violet, white)
+import Prim.RowList (class RowToList)
+import React.Basic.Emotion (Style, StyleProperty, auto, baseline, borderBox, color, css, em, inherit, nested, none, percent, px, relative, solid, str, var)
+import Type.Row.Homogeneous (class HomogeneousRowList)
+import Yoga.Block.Internal.CSS (transparent)
+
+nest
+  ∷ ∀ r rl
+  . RowToList r rl
+  ⇒ HomogeneousRowList rl StyleProperty
+  ⇒ Record r
+  → StyleProperty
 nest = nested <<< css
+
+variables ∷ Style
+variables = css
+  { "--plm-highlight-colour": color violet._500
+  , "--plm-highlightText-colour": color violet._50
+  , "--plm-inputBorder-colour": str (cssStringRGBA transparent)
+  , "--plm-inputBackground-colour": color gray._100
+  , "--plm-inputIcon-colour": color gray._400
+  , "--plm-inputText-colour": color (gray._700 # darken 0.05)
+  , "--plm-popupBackground-colour": color white
+  , "--plm-inputBorderActive-colour": var "--plm-highlight-colour"
+  , "--plm-inputSelectOption-colour": color gray._200
+  , "--plm-inputSelectOptionText-colour": color gray._800
+  }
 
 globalStyles ∷ Style
 globalStyles =
   css
     { ":root":
-        nest
+        nested $ variables <> css
           { "*, ::before, ::after":
               nest
                 { boxSizing: borderBox
@@ -36,7 +54,10 @@ globalStyles =
           , fontFamily:
               str
                 $ intercalate ","
-                    [ "system-ui"
+                    [ show "Inter var experimental"
+                    , show "Inter var"
+                    , "Inter"
+                    , "system-ui"
                     , "-apple-system"
                     , "'Segoe UI'"
                     , "Roboto"

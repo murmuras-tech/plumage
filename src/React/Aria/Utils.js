@@ -1,5 +1,7 @@
-const utils = require("@react-aria/utils")
+import { mergeProps, useId } from "@react-aria/utils"
 
-exports.mergePropsImpl = (args) => utils.mergeProps(...args)
+export function mergePropsImpl(args) {
+  return mergeProps(...args)
+}
 
-exports.useIdImpl = utils.useId
+export const useIdImpl = useId

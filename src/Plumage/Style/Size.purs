@@ -3,18 +3,27 @@ module Plumage.Style.Size where
 import Prelude
 import React.Basic.Emotion (Style, StyleProperty, css, percent, px, vh, vw)
 
+widthAndHeight' ∷ StyleProperty -> Style
+widthAndHeight' wh = css { width: wh, height: wh }
+
+widthAndHeight ∷ Int → Style
+widthAndHeight wh = widthAndHeight' (wh # px)
+
 width' ∷ StyleProperty → Style
 width' = css <<< { width: _ }
+
 width ∷ Int → Style
 width = px >>> width'
 
 minWidth' ∷ StyleProperty → Style
 minWidth' = css <<< { minWidth: _ }
+
 minWidth ∷ Int → Style
 minWidth = px >>> minWidth'
 
 maxWidth' ∷ StyleProperty → Style
 maxWidth' = css <<< { maxWidth: _ }
+
 maxWidth ∷ Int → Style
 maxWidth = px >>> maxWidth'
 
@@ -32,11 +41,13 @@ height' = css <<< { height: _ }
 
 minHeight' ∷ StyleProperty → Style
 minHeight' = css <<< { minHeight: _ }
+
 minHeight ∷ Int → Style
 minHeight = px >>> minHeight'
 
 maxHeight' ∷ StyleProperty → Style
 maxHeight' = css <<< { minHeight: _ }
+
 maxHeight ∷ Int → Style
 maxHeight = px >>> maxHeight'
 

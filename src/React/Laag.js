@@ -1,4 +1,4 @@
-const laag = require("react-laag")
+import { useLayer, Arrow } from "react-laag"
 
-exports.useLayerImpl = laag.useLayer
-exports.arrowImpl = laag.Arrow
+export const useLayerImpl = useLayer
+export const arrowImpl = Arrow

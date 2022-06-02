@@ -1,4 +1,4 @@
-const focus = require("@react-aria/interactions");
+import { useFocusWithin, useFocus } from "@react-aria/interactions"
 
-exports.useFocusWithinImpl = focus.useFocusWithin;
-exports.useFocusImpl = focus.useFocus;
+export const useFocusWithinImpl = useFocusWithin
+export const useFocusImpl = useFocus

@@ -10,17 +10,17 @@ outlines ds =
     { viewBox: "0 0 24 24"
     , xmlns: "http://www.w3.org/2000/svg"
     , xmlSpace: "preserve"
-    , stroke: "currentColor"
+    , stroke: "var(--icon-colour, currentColor)"
     , fill: "none"
     , children:
         ds
           <#> \d →
-              SVG.path
-                { strokeLinecap: "round"
-                , strokeLinejoin: "round"
-                , strokeWidth: "2"
-                , d
-                }
+            SVG.path
+              { strokeLinecap: "round"
+              , strokeLinejoin: "round"
+              , strokeWidth: "2"
+              , d
+              }
     }
 
 outline ∷ String → JSX

@@ -1,13 +1,13 @@
-const ariaButton = require("@react-aria/button")
+import { useButton } from "@react-aria/button"
 
-exports.useButtonImpl = ariaButton.useButton
+export const useButtonImpl = useButton
 
-exports.toDashedProps = (psProps) => {
+export function toDashedProps(psProps) {
   const arias = psProps.hasOwnProperty("_aria")
     ? Object.fromEntries(
         Object.entries(psProps._aria).map(([key, value]) => [
           "aria-" + key,
-          value,
+          value
         ])
       )
     : {}
@@ -15,7 +15,7 @@ exports.toDashedProps = (psProps) => {
     ? Object.fromEntries(
         Object.entries(psProps._data).map(([key, value]) => [
           "data-" + key,
-          value,
+          value
         ])
       )
     : {}
@@ -25,10 +25,10 @@ exports.toDashedProps = (psProps) => {
   return reactProps
 }
 
-exports.fromDashedProps = (reactProps) => {
+export function fromDashedProps(reactProps) {
   const psProps = {}
-  _aria = {}
-  _data = {}
+  let _aria = {}
+  let _data = {}
   Object.entries(reactProps.buttonProps).forEach(([key, value]) => {
     if (key.startsWith("aria-")) {
       _aria[key.slice(5)] = value

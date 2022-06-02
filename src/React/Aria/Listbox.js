@@ -1,6 +1,6 @@
-const listbox = require("@react-aria/listbox");
+import { useListBox, useListBoxSection, useOption } from "@react-aria/listbox"
 
-exports.useListBoxImpl = listbox.useListBox;
-exports.useListBoxSectionImpl = listbox.useListBoxSection;
-exports.useOptionImpl = listbox.useOption;
+export const useListBoxImpl = useListBox
+export const useListBoxSectionImpl = useListBoxSection
+export const useOptionImpl = useOption
 // exports.getItemIdImpl = listbox.getItemId;

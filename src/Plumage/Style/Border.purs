@@ -37,6 +37,18 @@ roundedFull = rounded (9999 # px)
 border ∷ Int -> Style
 border = css <<< { borderWidth: _ } <<< px
 
+borderLeft ∷ Int -> Style
+borderLeft = css <<< { borderLeftWidth: _ } <<< px
+
+borderTop ∷ Int -> Style
+borderTop = css <<< { borderTopWidth: _ } <<< px
+
+borderRight ∷ Int -> Style
+borderRight = css <<< { borderRightWidth: _ } <<< px
+
+borderBottom ∷ Int -> Style
+borderBottom = css <<< { borderBottomWidth: _ } <<< px
+
 borderSolid ∷ Style
 borderSolid = css { borderStyle: str "solid" }
 
@@ -45,6 +57,9 @@ borderNone = css { borderStyle: str "none" }
 
 borderCol ∷ Color -> Style
 borderCol = css <<< { borderColor: _ } <<< color
+
+borderCol' ∷ StyleProperty -> Style
+borderCol' = css <<< { borderColor: _ }
 
 boxSizingBorderBox ∷ Style
 boxSizingBorderBox = css { boxSizing: borderBox }
