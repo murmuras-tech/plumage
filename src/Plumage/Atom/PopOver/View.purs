@@ -3,11 +3,11 @@ module Plumage.Atom.PopOver.View where
 import Yoga.Prelude.View
 
 import Framer.Motion as M
-import Plumage (acceptClicks, positionAbsolute)
+import Fahrtwind (acceptClicks, positionAbsolute)
 import Plumage.Atom.Modal.View (mkClickAway)
 import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Prelude.Style (Style)
-import Plumage.Style.BoxShadow (shadow)
+import Fahrtwind.Style.BoxShadow (shadow)
 import React.Basic.DOM as R
 import React.Basic.Hooks as React
 

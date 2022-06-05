@@ -9,7 +9,6 @@ import Plumage.Util.HTML (div_)
 import React.Basic (JSX, fragment)
 import React.Basic.Emotion (px)
 import React.Basic.Emotion as E
-import React.Basic.Events (handler_)
 import Yoga ((</>))
 import Yoga.Block as Block
 
@@ -18,7 +17,7 @@ default = { title: "Atom/Input/Select" }
 
 select ∷ Effect JSX
 select = do
-  selectView <- mkSelect
+  selectView ← mkSelect
   pure $ fragment
     [ E.global </> { styles: globalStyles }
     , Block.stack { space: 20 # px }
@@ -28,7 +27,7 @@ select = do
                 , toString: identity
                 , toValue: identity
                 , choices: [ "Heinz", "Dembo" ]
-                , onChange: handler_ mempty
+                , onChange: mempty
                 }
             ]
         ]

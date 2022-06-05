@@ -10,19 +10,19 @@ import Effect.Exception (Error)
 import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
-import Plumage (focus) as P
+import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
+import Fahrtwind (focus) as P
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
 import Plumage.Atom.PopOver.View (mkPopOverView)
-import Plumage.Style (pB, pT, pX, pY)
-import Plumage.Style.Border (border, borderCol)
-import Plumage.Style.Color.Tailwind as TW
-import Plumage.Style.Color.Text (textCol)
-import Plumage.Style.Cursor (cursorPointer)
-import Plumage.Style.Display.Flex (flexCol, gap)
-import Plumage.Style.Overflow (overflowYScroll)
-import Plumage.Style.ScollBar (scrollBar)
+import Fahrtwind.Style (pB, pT, pX, pY)
+import Fahrtwind.Style.Border (border, borderCol)
+import Fahrtwind.Style.Color.Tailwind as TW
+import Fahrtwind.Style.Color.Text (textCol)
+import Fahrtwind.Style.Cursor (cursorPointer)
+import Fahrtwind.Style.Display.Flex (flexCol, gap)
+import Fahrtwind.Style.Overflow (overflowYScroll)
+import Fahrtwind.Style.ScollBar (scrollBar)
 import Plumage.Util.HTML as H
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)

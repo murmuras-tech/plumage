@@ -2,7 +2,6 @@ module Plumage.Atom.Input.Input.Style where
 
 import Plumage.Prelude.Style
 
-import Plumage.Style (attributeValueStyle)
 import React.Basic.Emotion (auto, px)
 import Yoga.Block.Internal.CSS (transparent)
 
@@ -95,7 +94,8 @@ plumageInputContainerStyle =
       )
 
 plumageInputContainerFocusWithinStyle ∷ Style
-plumageInputContainerFocusWithinStyle = borderCol' (var "--plm-inputBorderActive-colour")
+plumageInputContainerFocusWithinStyle = borderCol'
+  (var "--plm-inputBorderActive-colour")
 
 plumageInputStyle ∷ Style
 plumageInputStyle =

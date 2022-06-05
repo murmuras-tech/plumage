@@ -5,21 +5,17 @@ import Plumage.Prelude.Style
 import Data.Array ((..))
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage.Style.Border (boxSizingContentBox)
-import Plumage.Style.Color.Background (background)
-import Plumage.Style.Color.Tailwind as TW
-import Plumage.Style.Color.Util (withAlpha)
-import Plumage.Style.Display.Flex (flexRow, gap)
-import Plumage.Style.Size (height, width)
+import Fahrtwind.Style as TW
 import Plumage.Util.HTML as H
 import React.Basic.DOM as R
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 import Yoga ((/>), (</*))
 
-mkKittLoadingBar :: forall e a. React.Component { numberOfLights :: Int, remoteData :: RemoteData e a }
+mkKittLoadingBar ∷
+  ∀ e a. React.Component { numberOfLights ∷ Int, remoteData ∷ RemoteData e a }
 mkKittLoadingBar =
-  React.component "KittLoadingBar" \props -> React.do
+  React.component "KittLoadingBar" \props → React.do
     let { numberOfLights: number, remoteData: rd } = props
     pure $
       H.div_

@@ -9,17 +9,8 @@ import Data.Traversable (for_)
 import Data.Tuple.Nested ((/\))
 import Foreign.Object as Object
 import Framer.Motion as M
-import Plumage.Layer as Layer
-import Plumage.Style (mXY, pX, pXY, pY)
-import Plumage.Style.Border (border, borderCol, borderNone, borderSolid, boxSizingBorderBox, rounded, roundedXl)
-import Plumage.Style.BoxShadow (shadowDefaultCol, shadowSm)
-import Plumage.Style.Color.Background (background)
-import Plumage.Style.Color.Tailwind as C
-import Plumage.Style.Color.Text (textCol)
-import Plumage.Style.Cursor (cursorPointer)
-import Plumage.Style.Display (inlineBlock)
-import Plumage.Style.Opacity (opacity)
-import Plumage.Style.Position (positionRelative, positionAbsolute)
+import Fahrtwind.Layer as Layer
+import Fahrtwind.Style (background, black, border, borderCol, borderNone, borderSolid, boxSizingBorderBox, cursorPointer, gray, inlineBlock, mXY, opacity, pX, pXY, pY, positionAbsolute, positionRelative, rounded, roundedXl, shadowDefaultCol, shadowSm, textCol, violet, white)
 import Prim.Row (class Union)
 import React.Aria.Button (ButtonPropsImpl, useButton)
 import React.Aria.Focus (useFocusRing)
@@ -111,7 +102,7 @@ focusStyle ∷ Style
 focusStyle =
   fold
     [ border 4
-    , borderCol C.violet._400
+    , borderCol violet._400
     , borderSolid
     , boxSizingBorderBox
     , rounded (E.px 17)
@@ -123,11 +114,11 @@ focusStyle =
 baseButtonStyle ∷ Style
 baseButtonStyle =
   fold
-    [ background C.white
-    , textCol C.black
+    [ background white
+    , textCol black
     , roundedXl
     , borderSolid
-    , borderCol C.gray._300
+    , borderCol gray._300
     , border 1
     , pY 11
     , pX 27
@@ -148,10 +139,10 @@ primaryButtonStyle ∷ Style
 primaryButtonStyle =
   baseButtonStyle
     <> fold
-      [ background C.violet._600
-      , textCol C.white
+      [ background violet._600
+      , textCol white
       , borderNone
       , pY 12
       , pX 28
-      , shadowDefaultCol C.violet._600
+      , shadowDefaultCol violet._600
       ]

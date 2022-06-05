@@ -482,7 +482,7 @@ in  upstream
       , "web-html"
       ]
     , repo = "https://github.com/spicydonuts/purescript-react-basic-hooks.git"
-    , version = "v7.0.1"
+    , version = "e7494bd4656b4a43c2efc69bf5f512e154f05cc1"
     }
   with react-basic.repo
        =
@@ -492,10 +492,6 @@ in  upstream
        =
       "https://github.com/working-group-purescript-es/purescript-react-basic-dom.git"
   with react-basic-dom.version = "es-modules"
-  with react-basic-hooks.repo
-       =
-      "https://github.com/working-group-purescript-es/purescript-react-basic-hooks.git"
-  with react-basic-hooks.version = "es-modules"
   with react-basic-emotion.repo
        =
       "https://github.com/working-group-purescript-es/purescript-react-basic-emotion.git"
@@ -604,7 +600,7 @@ in  upstream
     }
   with ry-blocks =
     { repo = "https://github.com/rowtype-yoga/ry-blocks.git"
-    , version = "988aa6724ecd53a2f6f6a527ed0322f470933b7c"
+    , version = "c75ba817af9dcbc1107cc0dbe76ce9637adede66"
     , dependencies =
       [ "aff"
       , "aff-promise"
@@ -710,4 +706,21 @@ in  upstream
       [ "aff", "effect", "maybe", "prelude", "record", "typelevel-prelude" ]
     , repo = "https://github.com/i-am-the-slime/purescript-justifill.git"
     , version = "v0.3.1"
+    }
+  with fahrtwind =
+    { repo = "https://github.com/rowtype-yoga/purescript-fahrtwind.git"
+    , dependencies =
+      [ "arrays"
+      , "colors"
+      , "foreign-object"
+      , "integers"
+      , "prelude"
+      , "react-basic"
+      , "react-basic-dom"
+      , "react-basic-emotion"
+      , "tuples"
+      , "typelevel-prelude"
+      , "unsafe-coerce"
+      ]
+    , version = "main"
     }

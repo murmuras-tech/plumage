@@ -24,26 +24,26 @@
   },
   "homepage": "https://github.com/murmuras-tech/plumage#readme",
   "dependencies": {
-    "@emotion/react": "^11.8.2",
-    "@fontsource/inter": "^4.5.7",
-    "@fontsource/jetbrains-mono": "^4.5.5",
-    "@react-aria/button": "^3.4.3",
-    "@react-aria/focus": "^3.5.4",
-    "@react-aria/interactions": "^3.8.3",
-    "@react-aria/overlays": "^3.8.1",
-    "@react-aria/utils": "^3.11.3",
-    "framer-motion": "^6.2.8",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-laag": "^2.0.3"
+    "@emotion/react": "^11.9.0",
+    "@fontsource/inter": "^4.5.10",
+    "@fontsource/jetbrains-mono": "^4.5.8",
+    "@react-aria/button": "^3.5.0",
+    "@react-aria/focus": "^3.6.0",
+    "@react-aria/interactions": "^3.9.0",
+    "@react-aria/overlays": "^3.9.0",
+    "@react-aria/utils": "^3.13.0",
+    "framer-motion": "^6.3.10",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "react-laag": "^2.0.4"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "^6.4.20",
-    "@storybook/addon-actions": "^6.4.20",
-    "@storybook/addons": "^6.4.20",
-    "@storybook/builder-webpack5": "^6.4.20",
-    "@storybook/manager-webpack5": "^6.4.20",
-    "@storybook/react": "^6.4.20",
-    "babel-loader": "^8.2.4"
+    "@storybook/addon-a11y": "^6.5.6",
+    "@storybook/addon-actions": "^6.5.6",
+    "@storybook/addons": "^6.5.6",
+    "@storybook/builder-webpack5": "^6.5.6",
+    "@storybook/manager-webpack5": "^6.5.6",
+    "@storybook/react": "^6.5.6",
+    "babel-loader": "^8.2.5"
   }
 }
