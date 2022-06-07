@@ -3,7 +3,7 @@ module Story.Select (default, select) where
 import Prelude
 
 import Effect (Effect)
-import Plumage (globalStyles, width)
+import Fahrtwind (globalStyles, width)
 import Plumage.Atom.Input.Select (mkSelect)
 import Plumage.Util.HTML (div_)
 import React.Basic (JSX, fragment)

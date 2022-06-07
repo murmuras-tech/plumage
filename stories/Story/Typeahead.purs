@@ -9,7 +9,7 @@ import Effect.Aff (delay)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Effect.Random (randomRange)
-import Plumage (background, globalStyles, gray, height', widthFull)
+import Fahrtwind (background, globalStyles, gray, height', widthFull)
 import Plumage.Molecule.Typeahead (mkTypeahead)
 import Plumage.Molecule.Typeahead as Typeahead
 import Plumage.Util.HTML as H

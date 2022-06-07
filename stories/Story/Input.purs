@@ -3,7 +3,7 @@ module Story.Input (default, input) where
 import Prelude
 
 import Effect (Effect)
-import Plumage (globalStyles, width)
+import Fahrtwind (globalStyles, width)
 import Plumage.Atom.Input.View (mkInput)
 import Plumage.Util.HTML (div_)
 import React.Basic (JSX, fragment)

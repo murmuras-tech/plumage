@@ -6,7 +6,7 @@ import Effect.Class.Console as Console
 import Effect.Uncurried (mkEffectFn1)
 import Plumage.Atom.Button (baseButtonStyle, primaryButtonStyle)
 import Plumage.Atom.Button (mkButton) as P
-import Plumage.Style (pT)
+import Fahrtwind.Style (pT)
 import Plumage.Util.HTML as H
 import React.Basic (JSX)
 import React.Basic.DOM as R
