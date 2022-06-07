@@ -26,11 +26,15 @@ clickAwayStyle = P.widthScreen <> P.heightScreen
 
 -- [TODO] Move out
 mkClickAway ∷
-  String →
-  React.Component { css ∷ Style, hide ∷ Effect Unit, isVisible ∷ Boolean }
-mkClickAway clickAwayId = do
+  React.Component
+    { css ∷ Style
+    , hide ∷ Effect Unit
+    , isVisible ∷ Boolean
+    , clickAwayId ∷ String
+    }
+mkClickAway = do
   React.component "Clickaway"
-    \{ css, isVisible, hide } →
+    \{ css, isVisible, hide, clickAwayId } →
       React.do
         renderInPortal ← useRenderInPortal clickAwayId
         pure
@@ -56,19 +60,29 @@ type Props =
   , isVisible ∷ Boolean
   , content ∷ JSX
   , allowClickAway ∷ Boolean
+  , clickAwayId ∷ String
+  , modalContainerId ∷ String
   }
 
-mkModal ∷ ModalIds → React.Component Props
-mkModal { clickAwayId, modalContainerId } = do
-  clickAway ← mkClickAway clickAwayId
+mkModal ∷ React.Component Props
+mkModal = do
+  clickAway ← mkClickAway
   React.component "Modal" \props → React.do
-    let { hide, isVisible, content, allowClickAway } = props
+    let
+      { hide
+      , isVisible
+      , content
+      , allowClickAway
+      , clickAwayId
+      , modalContainerId
+      } = props
     renderInPortal ← useRenderInPortal modalContainerId
     pure $ fragment
       [ clickAway
           { css: background (TW.gray._900 # withAlpha 0.5)
           , hide: if allowClickAway then hide else mempty
           , isVisible
+          , clickAwayId
           }
       , renderInPortal (H.div "modal" modalStyle [ content ])
       ]

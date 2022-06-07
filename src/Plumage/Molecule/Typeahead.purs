@@ -138,7 +138,6 @@ mkTypeaheadView
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
   popOver ← mkPopOverView
-    { clickAwayId: clickAwayId, containerId: contextMenuLayerId }
   React.reactComponent "TypeaheadView" React.do (render loadingBar popOver)
   where
   render loadingBar popOver (props ∷ ViewProps a) = React.do
@@ -215,6 +214,8 @@ mkTypeaheadView
         , popOver
             { hide: blurCurrentItem
             , placementRef: inputContainerRef
+            , clickAwayId: clickAwayId
+            , containerId: contextMenuLayerId
             , childʔ:
                 if not focusIsWithin then Nothing
                 else Just $ R.div'

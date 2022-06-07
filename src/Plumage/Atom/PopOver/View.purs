@@ -17,14 +17,20 @@ popOverShadow =
     "0 30px 12px 2px rgba(50,57,70,0.2), 0 24px 48px 0 rgba(0,0,0,0.4)"
 
 mkPopOverView ∷
-  { clickAwayId ∷ String, containerId ∷ String } →
   React.Component
-    { placementRef ∷ NodeRef, childʔ ∷ Maybe JSX, hide ∷ Effect Unit }
-mkPopOverView ids = do
-  popOver ← mkPopOver ids # liftEffect
+    { clickAwayId ∷ String
+    , containerId ∷ String
+    , placementRef ∷ NodeRef
+    , childʔ ∷ Maybe JSX
+    , hide ∷ Effect Unit
+    }
+mkPopOverView = do
+  popOver ← mkPopOver
   React.component "PopOverView" \props → React.do
     pure $ popOver
       { isVisible: props.childʔ # isJust
+      , clickAwayId: props.clickAwayId
+      , containerId: props.containerId
       , hide: props.hide
       , placementRef: props.placementRef
       , content:
@@ -66,20 +72,20 @@ mkPopOverView ids = do
 popOverStyle ∷ Style
 popOverStyle = positionAbsolute <> acceptClicks
 
-type PopOverIds = { clickAwayId ∷ String, containerId ∷ String }
-
 type Props =
   { hide ∷ Effect Unit
   , isVisible ∷ Boolean
   , content ∷ JSX
   , placementRef ∷ NodeRef
+  , clickAwayId ∷ String
+  , containerId ∷ String
   }
 
-mkPopOver ∷ PopOverIds → React.Component Props
-mkPopOver { clickAwayId, containerId } = do
-  clickAway ← mkClickAway clickAwayId
+mkPopOver ∷ React.Component Props
+mkPopOver = do
+  clickAway ← mkClickAway
   React.component "popOver" \props → React.do
-    let { hide, isVisible, content } = props
+    let { hide, isVisible, content, clickAwayId, containerId } = props
     bb /\ setBoundingBox ← React.useState' (zero ∷ DOMRect)
     useEffect isVisible do
       when isVisible do
@@ -95,6 +101,7 @@ mkPopOver { clickAwayId, containerId } = do
           { css: mempty
           , hide
           , isVisible
+          , clickAwayId
           }
       , renderInPortal
           ( R.div'
