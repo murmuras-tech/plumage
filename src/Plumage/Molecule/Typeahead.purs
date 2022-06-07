@@ -7,14 +7,8 @@ import Data.Array as Array
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
-import Framer.Motion as M
-import Network.RemoteData (RemoteData)
-import Network.RemoteData as RemoteData
 import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
 import Fahrtwind (focus) as P
-import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
-import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
-import Plumage.Atom.PopOver.View (mkPopOverView)
 import Fahrtwind.Style (pB, pT, pX, pY)
 import Fahrtwind.Style.Border (border, borderCol)
 import Fahrtwind.Style.Color.Tailwind as TW
@@ -23,6 +17,12 @@ import Fahrtwind.Style.Cursor (cursorPointer)
 import Fahrtwind.Style.Display.Flex (flexCol, gap)
 import Fahrtwind.Style.Overflow (overflowYScroll)
 import Fahrtwind.Style.ScollBar (scrollBar)
+import Framer.Motion as M
+import Network.RemoteData (RemoteData)
+import Network.RemoteData as RemoteData
+import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
+import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
+import Plumage.Atom.PopOver.View (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), mkPopOverView)
 import Plumage.Util.HTML as H
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)
@@ -213,6 +213,7 @@ mkTypeaheadView
         [ inputElement
         , popOver
             { hide: blurCurrentItem
+            , placement: Placement Bottom Start
             , placementRef: inputContainerRef
             , clickAwayId: clickAwayId
             , containerId: contextMenuLayerId

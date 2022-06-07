@@ -2,12 +2,21 @@ module Plumage.Hooks.UsePopOver where
 
 import Yoga.Prelude.View
 
+import Control.Alternative as Alt
 import Data.Newtype (class Newtype)
 import Effect.Unsafe (unsafePerformEffect)
-import Plumage.Atom.PopOver.View (mkPopOver)
+import Framer.Motion (animatePresence)
+import Framer.Motion as M
+import Plumage.Atom.PopOver.View (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), mkPopOver, mkPopOverView)
+import Plumage.Atom.PopOver.View as PopOver
+import React.Basic.DOM as R
 import React.Basic.Hooks as React
 
-type Options = { clickAwayId ∷ String, containerId ∷ String }
+type Options =
+  { clickAwayId ∷ String
+  , containerId ∷ String
+  , placement ∷ Placement
+  }
 
 newtype UsePopOver hooks = UsePopOver
   (UseRef (Nullable Node) (UseState Boolean hooks))
@@ -17,27 +26,31 @@ derive instance Newtype (UsePopOver hooks) _
 usePopOver ∷
   Options →
   Hook UsePopOver
-    { hide ∷ Effect Unit
+    { hidePopOver ∷ Effect Unit
     , renderInPopOver ∷ JSX → JSX
-    , targetProps ∷ { onClick ∷ Effect Unit, ref ∷ NodeRef }
+    , targetRef ∷ NodeRef
+    , showPopOver ∷ Effect Unit
+    , isVisible ∷ Boolean
     }
 usePopOver options = coerceHook React.do
   isVisible /\ setIsVisible ← React.useState' false
   targetRef ← React.useRef null
   let
     renderInPopOver content = popOverComponent
-      { hide: setIsVisible false
-      , isVisible
-      , content
+      { hide: when isVisible $ setIsVisible false
+      , childʔ: if isVisible then Just content else Nothing
       , placementRef: targetRef
+      , placement: options.placement
       , clickAwayId: options.clickAwayId
       , containerId: options.containerId
       }
-    onClick = setIsVisible (not isVisible)
   pure
-    { targetProps: { onClick, ref: targetRef }
+    { targetRef
     , renderInPopOver
-    , hide: setIsVisible false
+    , hidePopOver: when isVisible $ setIsVisible false
+    , showPopOver: unless isVisible $ setIsVisible true
+    , isVisible
     }
-  where
-  popOverComponent = unsafePerformEffect mkPopOver
+
+popOverComponent ∷ PopOver.PopOverViewProps → JSX
+popOverComponent = unsafePerformEffect mkPopOverView
