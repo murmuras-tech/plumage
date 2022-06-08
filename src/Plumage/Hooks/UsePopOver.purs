@@ -2,14 +2,10 @@ module Plumage.Hooks.UsePopOver where
 
 import Yoga.Prelude.View
 
-import Control.Alternative as Alt
 import Data.Newtype (class Newtype)
 import Effect.Unsafe (unsafePerformEffect)
-import Framer.Motion (animatePresence)
-import Framer.Motion as M
-import Plumage.Atom.PopOver.View (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), mkPopOver, mkPopOverView)
+import Plumage.Atom.PopOver.View (Placement, mkPopOverView)
 import Plumage.Atom.PopOver.View as PopOver
-import React.Basic.DOM as R
 import React.Basic.Hooks as React
 
 type Options =
