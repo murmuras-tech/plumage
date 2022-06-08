@@ -54,7 +54,7 @@ mkCompo = React.component "Example" \placement → React.do
   { hidePopOver, isVisible, showPopOver, renderInPopOver, targetRef } ←
     usePopOver
       { containerId: "cm"
-      , clickAwayId: "clickaway"
+      , clickAwayIdʔ: Nothing -- Just "clickaway"
       , placement
       }
   -- useEffectOnce $ showPopOver *> mempty
@@ -95,7 +95,7 @@ mkDynamicCompo = React.component "DynamicExample" \_ → React.do
   { hidePopOver, isVisible, showPopOver, renderInPopOver, targetRef } ←
     usePopOver
       { containerId: "cm"
-      , clickAwayId: "clickaway"
+      , clickAwayIdʔ: Nothing
       , placement
       }
   useEffectOnce $ showPopOver *> mempty

@@ -215,7 +215,7 @@ mkTypeaheadView
             { hide: blurCurrentItem
             , placement: Placement Bottom Start
             , placementRef: inputContainerRef
-            , clickAwayId: clickAwayId
+            , clickAwayIdʔ: Just clickAwayId
             , containerId: contextMenuLayerId
             , childʔ:
                 if not focusIsWithin then Nothing

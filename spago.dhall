@@ -28,6 +28,7 @@ to generate this file without the comments in this block.
   , "foreign"
   , "foreign-object"
   , "framer-motion"
+  , "integers"
   , "literals"
   , "maybe"
   , "newtype"
@@ -43,12 +44,14 @@ to generate this file without the comments in this block.
   , "record"
   , "remotedata"
   , "ry-blocks"
+  , "st"
   , "strings"
   , "tuples"
   , "unsafe-coerce"
   , "unsafe-reference"
   , "untagged-union"
   , "web-dom"
+  , "web-events"
   , "web-html"
   ]
 , packages = ./packages.dhall

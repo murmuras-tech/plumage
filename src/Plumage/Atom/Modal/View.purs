@@ -2,8 +2,7 @@ module Plumage.Atom.Modal.View where
 
 import Yoga.Prelude.View
 
-import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
-import Fahrtwind (acceptClicks)
+import Fahrtwind (acceptClicks, ignoreClicks)
 import Fahrtwind.Style.Color.Background (background)
 import Fahrtwind.Style.Color.Tailwind as TW
 import Fahrtwind.Style.Color.Util (withAlpha)
@@ -11,6 +10,7 @@ import Fahrtwind.Style.Inset (left, left', top) as P
 import Fahrtwind.Style.Position (positionFixed)
 import Fahrtwind.Style.Size (heightScreen, widthScreen) as P
 import Fahrtwind.Style.Transform (translate)
+import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Util.HTML as H
 import React.Basic.DOM as R
 import React.Basic.Emotion (Style)
@@ -18,11 +18,13 @@ import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 
 clickAwayStyle ∷ Style
-clickAwayStyle = P.widthScreen <> P.heightScreen
-  <> positionFixed
-  <> P.left 0
-  <> P.top 0
-  <> acceptClicks
+clickAwayStyle =
+  P.widthScreen
+    <> P.heightScreen
+    <> positionFixed
+    <> P.left 0
+    <> P.top 0
+    <> acceptClicks
 
 -- [TODO] Move out
 mkClickAway ∷
@@ -44,7 +46,8 @@ mkClickAway = do
           </*>
             { className: "click-away"
             , css: clickAwayStyle <> css
-            , onClick: handler_ hide
+            , onMouseUp: handler_ hide
+            , onTouchEnd: handler_ hide
             }
 
 modalStyle ∷ Style

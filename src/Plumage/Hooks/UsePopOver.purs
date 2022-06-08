@@ -9,7 +9,7 @@ import Plumage.Atom.PopOver.View as PopOver
 import React.Basic.Hooks as React
 
 type Options =
-  { clickAwayId ∷ String
+  { clickAwayIdʔ ∷ Maybe String
   , containerId ∷ String
   , placement ∷ Placement
   }
@@ -37,7 +37,7 @@ usePopOver options = coerceHook React.do
       , childʔ: if isVisible then Just content else Nothing
       , placementRef: targetRef
       , placement: options.placement
-      , clickAwayId: options.clickAwayId
+      , clickAwayIdʔ: options.clickAwayIdʔ
       , containerId: options.containerId
       }
   pure

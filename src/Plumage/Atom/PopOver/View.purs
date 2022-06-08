@@ -3,35 +3,26 @@ module Plumage.Atom.PopOver.View where
 import Yoga.Prelude.View
 
 import Control.Monad.ST.Internal as ST
-import Data.Foldable (for_)
 import Data.Int as Int
-import Data.Maybe (fromMaybe, isNothing)
+import Data.Maybe (isNothing)
 import Data.Time.Duration (Milliseconds(..))
-import Data.Traversable (for, traverse)
 import Debug (spy)
-import Effect.Aff (delay, launchAff_)
-import Effect.Aff as Aff
-import Effect.Class.Console as Console
 import Fahrtwind (acceptClicks, positionAbsolute)
 import Fahrtwind.Style.BoxShadow (shadow)
-import Framer.Motion (onAnimationComplete)
 import Framer.Motion as M
-import Framer.Motion as Motion
 import Plumage.Atom.Modal.View (mkClickAway)
 import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Hooks.UseResize2 (useOnResize)
 import Plumage.Prelude.Style (Style)
 import React.Basic.DOM as R
-import React.Basic.Hooks (useInsertionEffectAlways)
 import React.Basic.Hooks as React
-import Unsafe.Coerce (unsafeCoerce)
-import Unsafe.Reference (UnsafeRefEq(..), reallyUnsafeRefEq, unsafeRefEq)
-import Web.DOM.Element (clientTop, scrollTop)
+import Unsafe.Reference (UnsafeRefEq, reallyUnsafeRefEq)
+import Web.Event.EventTarget (addEventListener, eventListener, removeEventListener)
 import Web.HTML (window)
-import Web.HTML.HTMLDocument (body)
+import Web.HTML.Event.EventTypes as EventType
 import Web.HTML.HTMLDocument as HTMLDocument
-import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (document, innerHeight, innerWidth, requestAnimationFrame, scrollX, scrollY)
+import Web.UIEvent.MouseEvent as MouseEvent
 
 popOverShadow ∷ Style
 popOverShadow =
@@ -39,7 +30,7 @@ popOverShadow =
     "0 30px 12px 2px rgba(50,57,70,0.2), 0 24px 48px 0 rgba(0,0,0,0.4)"
 
 type PopOverViewProps =
-  { clickAwayId ∷ String
+  { clickAwayIdʔ ∷ Maybe String
   , containerId ∷ String
   , placement ∷ Placement
   , placementRef ∷ NodeRef
@@ -52,8 +43,40 @@ mkPopOverView = do
   popOver ← mkPopOver
   React.component "PopOverView" \props → React.do
     visiblePlacementʔ /\ setVisiblePlacement ← React.useState' Nothing
+    animationDone /\ setAnimationDone ← React.useState' false
     visibleChildʔ /\ setVisibleChild ← React.useState' Nothing
     contentRef ← React.useRef null
+    motionRef ← React.useRef null
+    useEffectAlways do
+      if not animationDone || (props.clickAwayIdʔ # isJust) then
+        mempty
+      else do
+        bbʔ ← getBoundingBoxFromRef motionRef
+        targetBbʔ ← getBoundingBoxFromRef props.placementRef
+        case bbʔ, targetBbʔ of
+
+          Just bb, Just targetBb → do
+            eventTarget ← window >>= document <#> HTMLDocument.toEventTarget
+            listener ← eventListener \e → do
+              for_ (MouseEvent.fromEvent e) \mouseEvent → do
+                let pageX = MouseEvent.clientX mouseEvent # Int.toNumber
+                let pageY = MouseEvent.clientY mouseEvent # Int.toNumber
+                let _ = spy "stuff" { pageX, pageY, bb }
+                let
+                  outsideOfPopOver = (pageX < bb.left)
+                    || (pageX > bb.right)
+                    || (pageY < bb.top)
+                    || (pageY > bb.bottom)
+                  outsideOfTarget = (pageX < targetBb.left)
+                    || (pageX > targetBb.right)
+                    || (pageY < targetBb.top)
+                    || (pageY > targetBb.bottom)
+
+                props.hide # when (outsideOfPopOver && outsideOfTarget)
+            addEventListener EventType.click listener true eventTarget
+            pure $ removeEventListener EventType.click listener true eventTarget
+          _, _ → mempty
+
     let
       -- measureStyle = R.css { visibility: "hidden" }
       measureStyle = R.css
@@ -81,9 +104,17 @@ mkPopOverView = do
           , transition:
               { type: "spring", bounce: 0.2, duration: 0.3 }
           }
-      onAnimationComplete = M.onAnimationComplete \fgn →
-        when (reallyUnsafeRefEq fgn exit) do
+      onAnimationComplete = M.onAnimationComplete \fgn → do
+        if (reallyUnsafeRefEq fgn exit) then
           setVisiblePlacement Nothing
+        else if (reallyUnsafeRefEq fgn animate) then do
+          bbʔ ← getBoundingBoxFromRef contentRef
+          let _ = spy "bbʔ" bbʔ
+          setAnimationDone true
+        else mempty
+
+      onAnimationStart = M.onAnimationStart do
+        setAnimationDone false
 
       getBBWidthAndHeight = ado
         bbʔ ← getBoundingBoxFromRef contentRef
@@ -126,10 +157,6 @@ mkPopOverView = do
         ST.while (ST.read pRef <#> (_ /= placementBefore)) do
           getNewPlacement
         result ← ST.read pRef
-        when (result /= oldPlacement) do
-          let _ = spy "Changed from" (printPlacement oldPlacement)
-          let _ = spy "to" (printPlacement result)
-          pure unit
         pure result
 
     let
@@ -153,15 +180,14 @@ mkPopOverView = do
 
     useLayoutEffectAlways do
       recalculatePlacement
-      let _ = spy "Recalculating placement" unit
       mempty
 
-    useOnResize (200.0 # Milliseconds) $ \args → do
+    useOnResize (200.0 # Milliseconds) \_ → do
       setVisibleChild Nothing
 
     pure $ popOver
       { isVisible: props.childʔ # isJust
-      , clickAwayId: props.clickAwayId
+      , clickAwayIdʔ: props.clickAwayIdʔ
       , containerId: props.containerId
       , hide: props.hide
       , placement: visiblePlacementʔ # fromMaybe props.placement
@@ -185,6 +211,8 @@ mkPopOverView = do
                         , animate
                         , exit
                         , onAnimationComplete
+                        , onAnimationStart
+                        , ref: motionRef
                         }
                       />
                         [ child ]
@@ -201,7 +229,7 @@ type Props =
   , content ∷ JSX
   , placement ∷ Placement
   , placementRef ∷ NodeRef
-  , clickAwayId ∷ String
+  , clickAwayIdʔ ∷ Maybe String
   , containerId ∷ String
   }
 
@@ -264,7 +292,7 @@ mkPopOver ∷ React.Component Props
 mkPopOver = do
   clickAway ← mkClickAway
   React.component "popOver" \props → React.do
-    let { hide, isVisible, content, clickAwayId, containerId } = props
+    let { hide, isVisible, content, clickAwayIdʔ, containerId } = props
     refBB /\ setRefBB ← React.useState' (zero ∷ DOMRect)
     let
       recalc = when isVisible do
@@ -288,12 +316,9 @@ mkPopOver = do
 
     renderInPortal ← useRenderInPortal containerId
     pure $ fragment
-      [ clickAway
-          { css: mempty
-          , hide
-          , isVisible
-          , clickAwayId
-          }
+      [ clickAwayIdʔ
+          # foldMap \clickAwayId → clickAway
+              { css: mempty, hide, isVisible, clickAwayId }
       , renderInPortal
           ( R.div'
               </*
