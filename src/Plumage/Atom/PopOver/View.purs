@@ -65,12 +65,12 @@ mkPopOverView = do
           case bbsʔ of
             Nothing → mempty
             Just bbs → do
+              let eventType = EventType "mousedown"
               eventTarget ← window >>= document <#> HTMLDocument.toEventTarget
               listener ← eventListener \e → do
                 for_ (MouseEvent.fromEvent e) \mouseEvent → do
                   let x = MouseEvent.clientX mouseEvent # Int.toNumber
                   let y = MouseEvent.clientY mouseEvent # Int.toNumber
-                  let eventType = EventType "mousedown"
                   let
                     clickedOutside = bbs # NEA.all
                       \{ left, right, bottom, top } →
