@@ -241,13 +241,7 @@ mkTypeaheadView
           , ref: inputContainerRef
           }
         />
-          [ R.div'
-              </
-                { onClick: handler_ do
-                    getHTMLElementFromRef inputRef >>= traverse_ focus
-                }
-              />
-                [ props.beforeInput ]
+          [ props.beforeInput
           , R.input'
               </*>
                 { css: plumageInputStyle
