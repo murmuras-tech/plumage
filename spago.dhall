@@ -53,6 +53,7 @@ to generate this file without the comments in this block.
   , "web-dom"
   , "web-events"
   , "web-html"
+  , "web-uievents"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

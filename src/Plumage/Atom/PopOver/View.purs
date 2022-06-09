@@ -3,14 +3,20 @@ module Plumage.Atom.PopOver.View where
 import Yoga.Prelude.View
 
 import Control.Monad.ST.Internal as ST
+import Data.Array (all)
+import Data.Array.NonEmpty as NEA
+import Data.Array.NonEmpty as NonEmtpyArray
+import Data.Foldable (for_)
 import Data.Int as Int
 import Data.Maybe (isNothing)
 import Data.Time.Duration (Milliseconds(..))
+import Data.Traversable (for, traverse)
 import Debug (spy)
 import Fahrtwind (acceptClicks, positionAbsolute)
 import Fahrtwind.Style.BoxShadow (shadow)
 import Framer.Motion as M
 import Plumage.Atom.Modal.View (mkClickAway)
+import Plumage.Atom.PopOver.Types (DismissBehaviour(..), Placement(..), PrimaryPlacement(..), SecondaryPlacement(..))
 import Plumage.Hooks.UseRenderInPortal (useRenderInPortal)
 import Plumage.Hooks.UseResize2 (useOnResize)
 import Plumage.Prelude.Style (Style)
@@ -30,7 +36,7 @@ popOverShadow =
     "0 30px 12px 2px rgba(50,57,70,0.2), 0 24px 48px 0 rgba(0,0,0,0.4)"
 
 type PopOverViewProps =
-  { clickAwayIdʔ ∷ Maybe String
+  { dismissBehaviourʔ ∷ Maybe DismissBehaviour
   , containerId ∷ String
   , placement ∷ Placement
   , placementRef ∷ NodeRef
@@ -48,34 +54,32 @@ mkPopOverView = do
     contentRef ← React.useRef null
     motionRef ← React.useRef null
     useEffectAlways do
-      if not animationDone || (props.clickAwayIdʔ # isJust) then
+      if not animationDone then
         mempty
-      else do
-        bbʔ ← getBoundingBoxFromRef motionRef
-        targetBbʔ ← getBoundingBoxFromRef props.placementRef
-        case bbʔ, targetBbʔ of
-
-          Just bb, Just targetBb → do
-            eventTarget ← window >>= document <#> HTMLDocument.toEventTarget
-            listener ← eventListener \e → do
-              for_ (MouseEvent.fromEvent e) \mouseEvent → do
-                let pageX = MouseEvent.clientX mouseEvent # Int.toNumber
-                let pageY = MouseEvent.clientY mouseEvent # Int.toNumber
-                let _ = spy "stuff" { pageX, pageY, bb }
-                let
-                  outsideOfPopOver = (pageX < bb.left)
-                    || (pageX > bb.right)
-                    || (pageY < bb.top)
-                    || (pageY > bb.bottom)
-                  outsideOfTarget = (pageX < targetBb.left)
-                    || (pageX > targetBb.right)
-                    || (pageY < targetBb.top)
-                    || (pageY > targetBb.bottom)
-
-                props.hide # when (outsideOfPopOver && outsideOfTarget)
-            addEventListener EventType.click listener true eventTarget
-            pure $ removeEventListener EventType.click listener true eventTarget
-          _, _ → mempty
+      else case props.dismissBehaviourʔ of
+        Nothing → mempty
+        Just (DismissOnClickAway _) → mempty
+        Just (DismissOnClickOutsideElements elements) → do
+          -- No need to register and deregister an event listener if
+          -- there are no bounding boxes to measure
+          maybeBbsʔ ← for elements getBoundingBoxFromRef
+          let bbsʔ = maybeBbsʔ # NEA.catMaybes # NEA.fromArray
+          case bbsʔ of
+            Nothing → mempty
+            Just bbs → do
+              eventTarget ← window >>= document <#> HTMLDocument.toEventTarget
+              listener ← eventListener \e → do
+                for_ (MouseEvent.fromEvent e) \mouseEvent → do
+                  let x = MouseEvent.clientX mouseEvent # Int.toNumber
+                  let y = MouseEvent.clientY mouseEvent # Int.toNumber
+                  let
+                    clickedOutside = bbs # NEA.all
+                      \{ left, right, bottom, top } →
+                        x < left || x > right || y < top || y > bottom
+                  props.hide # when clickedOutside
+              addEventListener EventType.click listener true eventTarget
+              pure $ removeEventListener EventType.click listener true
+                eventTarget
 
     let
       -- measureStyle = R.css { visibility: "hidden" }
@@ -131,13 +135,13 @@ mkPopOverView = do
           if (bb.height > h) || (bb.width > w) then
             oldPlacement
           else if bb.right > w then
-            (Placement Left secondary)
+            (Placement LeftOf secondary)
           else if bb.left < zero then
-            (Placement Right secondary)
+            (Placement RightOf secondary)
           else if bb.top < zero then
-            (Placement Bottom secondary)
+            (Placement Below secondary)
           else if bb.bottom > h then
-            (Placement Top secondary)
+            (Placement Above secondary)
           else do
             oldPlacement
 
@@ -169,7 +173,7 @@ mkPopOverView = do
               void $ window >>= requestAnimationFrame do
                 void $ window >>= requestAnimationFrame do
                   bbWidthAndHeight ← getBBWidthAndHeight
-                  for_ bbWidthAndHeight.bbʔ $ \bb → do
+                  for_ bbWidthAndHeight.bbʔ $ \_ → do
                     let
                       newPlacement = getBestPlacement bbWidthAndHeight
                         props.placement
@@ -187,7 +191,7 @@ mkPopOverView = do
 
     pure $ popOver
       { isVisible: props.childʔ # isJust
-      , clickAwayIdʔ: props.clickAwayIdʔ
+      , dismissBehaviourʔ: props.dismissBehaviourʔ
       , containerId: props.containerId
       , hide: props.hide
       , placement: visiblePlacementʔ # fromMaybe props.placement
@@ -229,70 +233,31 @@ type Props =
   , content ∷ JSX
   , placement ∷ Placement
   , placementRef ∷ NodeRef
-  , clickAwayIdʔ ∷ Maybe String
+  , dismissBehaviourʔ ∷ Maybe DismissBehaviour
   , containerId ∷ String
   }
-
-data Placement = Placement PrimaryPlacement SecondaryPlacement
-data PrimaryPlacement = Top | Left | Right | Bottom
-data SecondaryPlacement = Centre | Start | End
-
-derive instance Eq PrimaryPlacement
-derive instance Ord PrimaryPlacement
-derive instance Eq SecondaryPlacement
-derive instance Ord SecondaryPlacement
-derive instance Eq Placement
-derive instance Ord Placement
-
-cyclePlacement ∷ Placement → Placement
-cyclePlacement = case _ of
-  Placement Top Start → Placement Top Centre
-  Placement Top Centre → Placement Top End
-  Placement Top End → Placement Right Start
-  Placement Right Start → Placement Right Centre
-  Placement Right Centre → Placement Right End
-  Placement Right End → Placement Bottom End
-  Placement Bottom End → Placement Bottom Centre
-  Placement Bottom Centre → Placement Bottom Start
-  Placement Bottom Start → Placement Left End
-  Placement Left End → Placement Left Centre
-  Placement Left Centre → Placement Left Start
-  Placement Left Start → Placement Top Start
-
-printPlacement ∷ Placement → String
-printPlacement (Placement primary secondary) = p <> " " <> s
-  where
-  p = case primary of
-    Top → "top"
-    Left → "left"
-    Right → "right"
-    Bottom → "bottom"
-  s = case secondary of
-    Centre → "centre"
-    Start → "start"
-    End → "end"
 
 toTransformOrigin ∷ Placement → String
 toTransformOrigin (Placement primary secondary) = primaryOrigin <> " " <>
   secondaryOrigin
   where
   primaryOrigin = case primary of
-    Top → "bottom"
-    Left → "right"
-    Right → "left"
-    Bottom → "top"
+    Above → "bottom"
+    LeftOf → "right"
+    RightOf → "left"
+    Below → "top"
   secondaryOrigin = case secondary of
     Centre → "center"
-    Start | primary == Top || primary == Bottom → "left"
+    Start | primary == Above || primary == Below → "left"
     Start → "top"
-    End | primary == Top || primary == Bottom → "right"
+    End | primary == Above || primary == Below → "right"
     End → "bottom"
 
 mkPopOver ∷ React.Component Props
 mkPopOver = do
   clickAway ← mkClickAway
   React.component "popOver" \props → React.do
-    let { hide, isVisible, content, clickAwayIdʔ, containerId } = props
+    let { hide, isVisible, content, dismissBehaviourʔ, containerId } = props
     refBB /\ setRefBB ← React.useState' (zero ∷ DOMRect)
     let
       recalc = when isVisible do
@@ -316,9 +281,10 @@ mkPopOver = do
 
     renderInPortal ← useRenderInPortal containerId
     pure $ fragment
-      [ clickAwayIdʔ
-          # foldMap \clickAwayId → clickAway
-              { css: mempty, hide, isVisible, clickAwayId }
+      [ case dismissBehaviourʔ of
+          Just (DismissOnClickAway { id, css }) →
+            clickAway { css, hide, isVisible, clickAwayId: id }
+          _ → mempty
       , renderInPortal
           ( R.div'
               </*
@@ -334,60 +300,60 @@ mkPopOver = do
 toAbsoluteCSS ∷ DOMRect → Placement → R.CSS
 toAbsoluteCSS bb (Placement primary secondary) =
   case primary, secondary of
-    Top, Centre → R.css
+    Above, Centre → R.css
       { top: bb.top
       , left: bb.left + bb.width / 2.0
       , transform: "translate(-50%, -100%)"
       }
-    Top, Start → R.css
+    Above, Start → R.css
       { top: bb.top
       , left: bb.left
       , transform: "translate(0, -100%)"
       }
-    Top, End → R.css
+    Above, End → R.css
       { top: bb.top
       , left: bb.right
       , transform: "translate(-100%, -100%)"
       }
-    Right, Centre → R.css
+    RightOf, Centre → R.css
       { top: bb.top + bb.height / 2.0
       , left: bb.right
       , transform: "translate(0, -50%)"
       }
-    Right, Start → R.css
+    RightOf, Start → R.css
       { top: bb.top
       , left: bb.right
       }
-    Right, End → R.css
+    RightOf, End → R.css
       { top: bb.bottom
       , left: bb.right
       , transform: "translate(0, -100%)"
       }
-    Left, Centre → R.css
+    LeftOf, Centre → R.css
       { top: bb.top + bb.height / 2.0
       , left: bb.left
       , transform: "translate(-100%, -50%)"
       }
-    Left, Start → R.css
+    LeftOf, Start → R.css
       { top: bb.top
       , left: bb.left
       , transform: "translate(-100%, 0)"
       }
-    Left, End → R.css
+    LeftOf, End → R.css
       { top: bb.bottom
       , left: bb.left
       , transform: "translate(-100%, -100%)"
       }
-    Bottom, Centre → R.css
+    Below, Centre → R.css
       { top: bb.bottom
       , left: bb.left + bb.width / 2.0
       , transform: "translate(-50%, 0)"
       }
-    Bottom, Start → R.css
+    Below, Start → R.css
       { top: bb.bottom
       , left: bb.left
       }
-    Bottom, End → R.css
+    Below, End → R.css
       { top: bb.bottom
       , left: bb.right
       , transform: "translate(-100%, 0)"

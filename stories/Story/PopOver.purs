@@ -2,11 +2,13 @@ module Story.PopOver (default, popOver, popOverDynamic) where
 
 import Yoga.Prelude.View
 
+import Data.Array.NonEmpty as NEA
 import Data.String as String
 import Fahrtwind (border, flexCol, gray, height, heightFull, heightScreen, justifyBetween, mXAuto, mXY, pX, pX', pY, roundedMd, roundedSm, textCol, width, width', widthAndHeight, widthFull)
 import Fahrtwind.Icon.Heroicons as Heroicon
 import Fahrtwind.Style (background, shadowDefault, widthAndHeight)
-import Plumage.Atom.PopOver.View (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), printPlacement, toTransformOrigin)
+import Plumage.Atom.PopOver.Types (DismissBehaviour(..), HookDismissBehaviour(..), Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), printPlacement)
+import Plumage.Atom.PopOver.View (toTransformOrigin)
 import Plumage.Hooks.UsePopOver (usePopOver)
 import Plumage.Util.HTML as H
 import React.Basic.DOM as R
@@ -26,24 +28,24 @@ popOver = do
     ( Block.centre { padding: E.px 24 }
         [ Block.stack_
             [ Block.cluster { space: "8px" }
-                [ compo (Placement Top Centre)
-                , compo (Placement Top Start)
-                , compo (Placement Top End)
+                [ compo (Placement Above Centre)
+                , compo (Placement Above Start)
+                , compo (Placement Above End)
                 ]
             , Block.cluster { space: "8px" }
-                [ compo (Placement Right Centre)
-                , compo (Placement Right Start)
-                , compo (Placement Right End)
+                [ compo (Placement RightOf Centre)
+                , compo (Placement RightOf Start)
+                , compo (Placement RightOf End)
                 ]
             , Block.cluster { space: "8px" }
-                [ compo (Placement Left Centre)
-                , compo (Placement Left Start)
-                , compo (Placement Left End)
+                [ compo (Placement LeftOf Centre)
+                , compo (Placement LeftOf Start)
+                , compo (Placement LeftOf End)
                 ]
             , Block.cluster { space: "8px" }
-                [ compo (Placement Bottom Centre)
-                , compo (Placement Bottom Start)
-                , compo (Placement Bottom End)
+                [ compo (Placement Below Centre)
+                , compo (Placement Below Start)
+                , compo (Placement Below End)
                 ]
             ]
         ]
@@ -54,7 +56,9 @@ mkCompo = React.component "Example" \placement → React.do
   { hidePopOver, isVisible, showPopOver, renderInPopOver, targetRef } ←
     usePopOver
       { containerId: "cm"
-      , clickAwayIdʔ: Nothing -- Just "clickaway"
+      , dismissBehaviourʔ: Just
+          ( DismissPopOverOnClickOutsideTargetAnd []
+          )
       , placement
       }
   -- useEffectOnce $ showPopOver *> mempty
@@ -90,29 +94,29 @@ popOverDynamic = do
 
 mkDynamicCompo ∷ Component Unit
 mkDynamicCompo = React.component "DynamicExample" \_ → React.do
-  placement /\ setPlacement ← React.useState (Placement Top Start)
+  placement /\ setPlacement ← React.useState (Placement Above Start)
   containerMargins /\ setContainerMargins ← React.useState' (R.css {})
   { hidePopOver, isVisible, showPopOver, renderInPopOver, targetRef } ←
     usePopOver
       { containerId: "cm"
-      , clickAwayIdʔ: Nothing
+      , dismissBehaviourʔ: Just (DismissPopOverOnClickOutsideTargetAnd [])
       , placement
       }
   useEffectOnce $ showPopOver *> mempty
   let
     cyclePlacement = case _ of
-      Placement Top Start → Placement Top Centre
-      Placement Top Centre → Placement Top End
-      Placement Top End → Placement Right Start
-      Placement Right Start → Placement Right Centre
-      Placement Right Centre → Placement Right End
-      Placement Right End → Placement Bottom End
-      Placement Bottom End → Placement Bottom Centre
-      Placement Bottom Centre → Placement Bottom Start
-      Placement Bottom Start → Placement Left End
-      Placement Left End → Placement Left Centre
-      Placement Left Centre → Placement Left Start
-      Placement Left Start → Placement Top Start
+      Placement Above Start → Placement Above Centre
+      Placement Above Centre → Placement Above End
+      Placement Above End → Placement RightOf Start
+      Placement RightOf Start → Placement RightOf Centre
+      Placement RightOf Centre → Placement RightOf End
+      Placement RightOf End → Placement Below End
+      Placement Below End → Placement Below Centre
+      Placement Below Centre → Placement Below Start
+      Placement Below Start → Placement LeftOf End
+      Placement LeftOf End → Placement LeftOf Centre
+      Placement LeftOf Centre → Placement LeftOf Start
+      Placement LeftOf Start → Placement Above Start
   let
     btn ∷ ∀ css. { | css } → JSX
     btn margins = R.button
@@ -128,7 +132,6 @@ mkDynamicCompo = React.component "DynamicExample" \_ → React.do
                 mXY 8
           , style: containerMargins
           , ref: targetRef
-          , onClick: handler_ showPopOver
           }
         />
           [ H.div_ (flexCol <> justifyBetween <> heightFull)
@@ -154,6 +157,10 @@ mkDynamicCompo = React.component "DynamicExample" \_ → React.do
                               />
                                 [ R.text "change" ]
                           ]
+                      , Block.button
+                          { onClick: handler stopPropagation (const showPopOver)
+                          }
+                          [ R.text "show" ]
                       ]
                   , btn { marginLeft: "auto" }
                   ]

@@ -4,10 +4,12 @@ import Yoga.Prelude.View
 
 import Data.Array ((!!))
 import Data.Array as Array
+import Data.Array.NonEmpty as NEA
+import Data.Foldable (for_, traverse_)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
-import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
+import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, userSelectNone, widthFull)
 import Fahrtwind (focus) as P
 import Fahrtwind.Style (pB, pT, pX, pY)
 import Fahrtwind.Style.Border (border, borderCol)
@@ -22,7 +24,8 @@ import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
 import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
-import Plumage.Atom.PopOver.View (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), mkPopOverView)
+import Plumage.Atom.PopOver.Types (DismissBehaviour(..), Placement(..), PrimaryPlacement(..), SecondaryPlacement(..))
+import Plumage.Atom.PopOver.View (mkPopOverView)
 import Plumage.Util.HTML as H
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Aria.Utils (useId)
@@ -213,9 +216,12 @@ mkTypeaheadView
         [ inputElement
         , popOver
             { hide: blurCurrentItem
-            , placement: Placement Bottom Start
+            , placement: Placement Below Start
             , placementRef: inputContainerRef
-            , clickAwayIdʔ: Just clickAwayId
+            , dismissBehaviourʔ: Just
+                ( DismissOnClickOutsideElements
+                    (NEA.cons' listRef [ inputContainerRef ])
+                )
             , containerId: contextMenuLayerId
             , childʔ:
                 if not focusIsWithin then Nothing
@@ -236,7 +242,13 @@ mkTypeaheadView
           , ref: inputContainerRef
           }
         />
-          [ R.div_ [ props.beforeInput ]
+          [ R.div'
+              </
+                { onClick: handler_ do
+                    getHTMLElementFromRef inputRef >>= traverse_ focus
+                }
+              />
+                [ props.beforeInput ]
           , R.input'
               </*>
                 { css: plumageInputStyle
