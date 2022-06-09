@@ -51,7 +51,8 @@ myTypeahead = do
               pure $ Right filteredWords
 
           , renderSuggestion: R.text
-          , onSelected: \s → setSelection (Array.cons s)
+          , onSelected: \s → setSelection (Array.cons s) *> pure
+              { dismiss: true }
           , onDismiss: Console.log "dismissed"
           , onRemoved: \s → setSelection (Array.delete s)
           , placeholder: "Search"

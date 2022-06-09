@@ -57,7 +57,7 @@ type Args a =
   }
 
 type Props a =
-  { onSelected ∷ a → Effect Unit
+  { onSelected ∷ a → Effect { dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
   , renderSuggestion ∷ a → JSX
   , loadSuggestions ∷ String → Aff (Either Error (Array a))
@@ -121,7 +121,7 @@ type ViewProps a =
   , suggestions ∷ RemoteData Error (Array a)
   , renderSuggestion ∷ a → JSX
   , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
-  , onSelected ∷ a → Effect Unit
+  , onSelected ∷ a → Effect { dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
@@ -201,7 +201,11 @@ mkTypeaheadView
             for_ nodeArray \n → do
               when (unsafeRefEq n (HTMLElement.toNode active))
                 $ blur active
-    let onSelected = props.onSelected
+    let
+      onSelected i = do
+        { dismiss } ← props.onSelected i
+        blurCurrentItem # when dismiss
+
     -- Keyboard events
     let
       handleKeyDown =
