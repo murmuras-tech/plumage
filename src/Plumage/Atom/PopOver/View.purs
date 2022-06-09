@@ -47,10 +47,16 @@ mkPopOverView = do
   popOver ← mkPopOver
   React.component "PopOverView" \props → React.do
     visiblePlacementʔ /\ setVisiblePlacement ← React.useState' Nothing
-    animationDone /\ setAnimationDone ← React.useState' false
+    -- Triggers a recomputation of the bounding box for more correct
+    -- click outside handling
+    _ /\ setAnimationDone ← React.useState' false
     visibleChildʔ /\ setVisibleChild ← React.useState' Nothing
     contentRef ← React.useRef null
     motionRef ← React.useRef null
+    useEffectAlways do
+      when (props.childʔ # isNothing) do
+        setVisibleChild Nothing
+      mempty
     useEffectAlways do
       case props.dismissBehaviourʔ of
         Nothing → mempty
@@ -110,8 +116,6 @@ mkPopOverView = do
         if (reallyUnsafeRefEq fgn exit) then
           setVisiblePlacement Nothing
         else if (reallyUnsafeRefEq fgn animate) then do
-          bbʔ ← getBoundingBoxFromRef contentRef
-          let _ = spy "bbʔ" bbʔ
           setAnimationDone true
         else mempty
 
@@ -162,7 +166,6 @@ mkPopOverView = do
         pure result
 
     let
-
       recalculatePlacement =
         case props.childʔ of
           Just child →
@@ -176,7 +179,8 @@ mkPopOverView = do
                       newPlacement = getBestPlacement bbWidthAndHeight
                         props.placement
                     setVisiblePlacement (Just newPlacement)
-                    setVisibleChild (Just child)
+                  -- Do this always
+                  setVisibleChild (Just child)
           Nothing →
             setVisibleChild Nothing
 

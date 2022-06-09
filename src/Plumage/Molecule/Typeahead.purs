@@ -1,13 +1,19 @@
 module Plumage.Molecule.Typeahead where
 
+import Prelude
 import Yoga.Prelude.View
 
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
 import Data.Time.Duration (Milliseconds(..))
-import Effect.Aff (Aff, attempt, delay)
+import Debug (spy)
+import Effect.Aff (Aff, attempt, delay, killFiber, launchAff, launchAff_)
+import Effect.Aff as Aff
+import Effect.Class.Console as Console
 import Effect.Exception (Error)
+import Effect.Random (randomRange)
+import Effect.Unsafe (unsafePerformEffect)
 import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
 import Fahrtwind (focus) as P
 import Fahrtwind.Style (pB, pT, pX, pY)
@@ -48,7 +54,6 @@ type Args a =
   { debounce ∷ Milliseconds
   , suggestionToText ∷ a → String
   , contextMenuLayerId ∷ String
-  , clickAwayId ∷ String
   }
 
 type Props a =
@@ -71,49 +76,43 @@ mkDefaultArgs ∷
 mkDefaultArgs
   { suggestionToText
   , contextMenuLayerId
-  , clickAwayId
   } =
   { debounce: Milliseconds 200.0
   , suggestionToText
   , contextMenuLayerId
-  , clickAwayId
   }
 
 mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
-  view ←
-    mkTypeaheadView
-      { contextMenuLayerId: args.contextMenuLayerId
-      , clickAwayId: args.clickAwayId
-      }
-  React.reactComponent "Typeahead" (render view)
-  where
-  render view props = React.do
+  typeaheadView ← mkTypeaheadView
+    { contextMenuLayerId: args.contextMenuLayerId }
+  React.reactComponent "Typeahead" \props → React.do
     input /\ setInput ← React.useState' ""
-    suggestions /\ setSuggestions ← React.useState' (RemoteData.NotAsked)
+    suggestions /\ setSuggestions ← React.useState' RemoteData.NotAsked
     activeIndex /\ updateActiveIndex ← React.useState Nothing
     useAff input do
-      delay args.debounce
       setSuggestions RemoteData.Loading # liftEffect
+      delay args.debounce
       result ← attempt (props.loadSuggestions input)
       let rd = RemoteData.fromEither (join result)
+      let _ = spy "here's what it should show" rd
       setSuggestions rd # liftEffect
 
     pure
-      $ view
-      </>
-        { input
-        , setInput
-        , suggestions
-        , activeIndex
-        , updateActiveIndex
-        , onSelected: props.onSelected
-        , onRemoved: props.onRemoved
-        , onDismiss: props.onDismiss
-        , placeholder: props.placeholder
-        , beforeInput: props.beforeInput
-        , renderSuggestion: props.renderSuggestion
-        }
+      $ typeaheadView
+          </>
+            { input
+            , setInput
+            , suggestions
+            , activeIndex
+            , updateActiveIndex
+            , onSelected: props.onSelected
+            , onRemoved: props.onRemoved
+            , onDismiss: props.onDismiss
+            , placeholder: props.placeholder
+            , beforeInput: props.beforeInput
+            , renderSuggestion: props.renderSuggestion
+            }
 
 type ViewProps a =
   { activeIndex ∷ Maybe Int
@@ -131,18 +130,14 @@ type ViewProps a =
 
 mkTypeaheadView ∷
   ∀ a.
-  { contextMenuLayerId ∷ String
-  , clickAwayId ∷ String
-  } →
+  { contextMenuLayerId ∷ String } →
   Effect (ReactComponent (ViewProps a))
 mkTypeaheadView
-  { contextMenuLayerId, clickAwayId } = do
+  { contextMenuLayerId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
   popOver ← mkPopOverView
-  React.reactComponent "TypeaheadView" React.do (render loadingBar popOver)
-  where
-  render loadingBar popOver (props ∷ ViewProps a) = React.do
+  React.reactComponent "TypeaheadView" \(props ∷ ViewProps a) → React.do
     let
       { renderSuggestion
       , input
@@ -155,32 +150,41 @@ mkTypeaheadView
       } = props
     id ← useId
     listRef ← React.useRef null
+    -- The previous suggestions so we have something to display while loading
     prevSuggs /\ setPrevSuggs ← React.useState' []
     inputHasFocus /\ setInputHasFocus ← React.useState' false
     popupHasFocus /\ setPopupHasFocus ← React.useState' false
     inputContainerRef ← React.useRef null
     inputRef ← React.useRef null
+
     let focusIsWithin = inputHasFocus || popupHasFocus
+
     useEffect focusIsWithin do
       unless focusIsWithin do
         updateActiveIndex (const Nothing)
       mempty
+
     { focusWithinProps } ←
       useFocusWithin
         { onFocusWithin: handler_ (setPopupHasFocus true)
         , onBlurWithin: handler_ (setPopupHasFocus false)
         }
+
     { focusProps } ←
       useFocus
         { onFocus: handler_ (setInputHasFocus true)
         , onBlur: handler_ (setInputHasFocus false)
         }
+
+    -- We store the result whenever we have successful suggestions
     React.useEffect (RemoteData.isSuccess suggestions) do
       case suggestions of
         RemoteData.Success suggs → setPrevSuggs suggs
         _ → mempty
       mempty
+
     focusActiveElement listRef activeIndex
+
     let
       focusInput ∷ Effect Unit
       focusInput = do
@@ -198,7 +202,11 @@ mkTypeaheadView
               when (unsafeRefEq n (HTMLElement.toNode active))
                 $ blur active
     let
-      onSelected = props.onSelected
+      onSelected x = do
+        setInput ""
+        blurCurrentItem
+        props.onSelected x
+
     -- Keyboard events
     let
       handleKeyDown =
@@ -282,7 +290,9 @@ mkTypeaheadView
 
       resultsContainer =
         R.div'
-          </* { css: resultsContainerStyle }
+          </*
+            { css: resultsContainerStyle
+            }
           />
             [ R.ul'
                 </*
@@ -315,6 +325,7 @@ mkTypeaheadView
             RemoteData.Success suggs → suggs
     pure inputBox
 
+  where
   focusActiveElement listRef activeIndex =
     useEffect activeIndex do
       maybeNode ← React.readRefMaybe listRef
