@@ -20,6 +20,7 @@ import Plumage.Prelude.Style (Style)
 import React.Basic.DOM as R
 import React.Basic.Hooks as React
 import Unsafe.Reference (reallyUnsafeRefEq)
+import Web.Event.Event (EventType(..))
 import Web.Event.EventTarget (addEventListener, eventListener, removeEventListener)
 import Web.HTML (window)
 import Web.HTML.Event.EventTypes as EventType
@@ -69,7 +70,7 @@ mkPopOverView = do
                 for_ (MouseEvent.fromEvent e) \mouseEvent → do
                   let x = MouseEvent.clientX mouseEvent # Int.toNumber
                   let y = MouseEvent.clientY mouseEvent # Int.toNumber
-                  let eventType = EventType.mouseDown
+                  let eventType = EventType "mousedown"
                   let
                     clickedOutside = bbs # NEA.all
                       \{ left, right, bottom, top } →
