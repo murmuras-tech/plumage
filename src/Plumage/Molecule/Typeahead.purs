@@ -201,9 +201,7 @@ mkTypeaheadView
             for_ nodeArray \n → do
               when (unsafeRefEq n (HTMLElement.toNode active))
                 $ blur active
-    let
-      onSelected = props.onSelected
-
+    let onSelected = props.onSelected
     -- Keyboard events
     let
       handleKeyDown =
