@@ -3,14 +3,11 @@ module Plumage.Atom.PopOver.View where
 import Yoga.Prelude.View
 
 import Control.Monad.ST.Internal as ST
-import Data.Array (all)
 import Data.Array.NonEmpty as NEA
-import Data.Array.NonEmpty as NonEmtpyArray
-import Data.Foldable (for_)
 import Data.Int as Int
 import Data.Maybe (isNothing)
 import Data.Time.Duration (Milliseconds(..))
-import Data.Traversable (for, traverse)
+import Data.Traversable (for)
 import Debug (spy)
 import Fahrtwind (acceptClicks, positionAbsolute)
 import Fahrtwind.Style.BoxShadow (shadow)
@@ -22,7 +19,7 @@ import Plumage.Hooks.UseResize2 (useOnResize)
 import Plumage.Prelude.Style (Style)
 import React.Basic.DOM as R
 import React.Basic.Hooks as React
-import Unsafe.Reference (UnsafeRefEq, reallyUnsafeRefEq)
+import Unsafe.Reference (reallyUnsafeRefEq)
 import Web.Event.EventTarget (addEventListener, eventListener, removeEventListener)
 import Web.HTML (window)
 import Web.HTML.Event.EventTypes as EventType

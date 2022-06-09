@@ -5,11 +5,10 @@ import Yoga.Prelude.View
 import Data.Array ((!!))
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
-import Data.Foldable (for_, traverse_)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
-import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, userSelectNone, widthFull)
+import Fahrtwind (background', borderTop, height, itemsCenter, justifyEnd, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthFull)
 import Fahrtwind (focus) as P
 import Fahrtwind.Style (pB, pT, pX, pY)
 import Fahrtwind.Style.Border (border, borderCol)

@@ -17,7 +17,7 @@ toDismissBehaviour targetRef = case _ of
   DismissPopOverOnClickOutsideTargetAnd refs →
     DismissOnClickOutsideElements (NEA.cons' targetRef refs)
   DismissPopOverOnClickOutsideElements ref refs →
-    DismissOnClickOutsideElements (NEA.cons' refs refs)
+    DismissOnClickOutsideElements (NEA.cons' ref refs)
 
 data DismissBehaviour
   = DismissOnClickAway { id ∷ String, css ∷ Style }

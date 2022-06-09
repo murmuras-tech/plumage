@@ -4,7 +4,7 @@ import Yoga.Prelude.View
 
 import Data.Newtype (class Newtype)
 import Effect.Unsafe (unsafePerformEffect)
-import Plumage.Atom.PopOver.Types (DismissBehaviour, HookDismissBehaviour, Placement, toDismissBehaviour)
+import Plumage.Atom.PopOver.Types (HookDismissBehaviour, Placement, toDismissBehaviour)
 import Plumage.Atom.PopOver.View (mkPopOverView)
 import Plumage.Atom.PopOver.View as PopOver
 import React.Basic.Hooks as React
