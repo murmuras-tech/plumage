@@ -69,13 +69,15 @@ mkPopOverView = do
                 for_ (MouseEvent.fromEvent e) \mouseEvent → do
                   let x = MouseEvent.clientX mouseEvent # Int.toNumber
                   let y = MouseEvent.clientY mouseEvent # Int.toNumber
+                  let eventType = EventType.mouseDown
                   let
                     clickedOutside = bbs # NEA.all
                       \{ left, right, bottom, top } →
                         x < left || x > right || y < top || y > bottom
                   props.hide # when clickedOutside
-              addEventListener EventType.click listener true eventTarget
-              pure $ removeEventListener EventType.click listener true
+
+              addEventListener eventType listener true eventTarget
+              pure $ removeEventListener eventType listener true
                 eventTarget
 
     let
