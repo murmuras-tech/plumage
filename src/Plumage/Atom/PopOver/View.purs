@@ -52,9 +52,7 @@ mkPopOverView = do
     contentRef ← React.useRef null
     motionRef ← React.useRef null
     useEffectAlways do
-      if not animationDone then
-        mempty
-      else case props.dismissBehaviourʔ of
+      case props.dismissBehaviourʔ of
         Nothing → mempty
         Just (DismissOnClickAway _) → mempty
         Just (DismissOnClickOutsideElements elements) → do
