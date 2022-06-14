@@ -2,17 +2,13 @@ module Story.PopOver (default, popOver, popOverDynamic) where
 
 import Yoga.Prelude.View
 
-import Data.Array.NonEmpty as NEA
-import Data.String as String
-import Fahrtwind (border, flexCol, gray, height, heightFull, heightScreen, justifyBetween, mXAuto, mXY, pX, pX', pY, roundedMd, roundedSm, textCol, width, width', widthAndHeight, widthFull)
+import Fahrtwind (border, flexCol, gray, height, heightFull, justifyBetween, mXAuto, mXY, pX, pY, roundedMd, textCol, width, widthFull)
 import Fahrtwind.Icon.Heroicons as Heroicon
 import Fahrtwind.Style (background, shadowDefault, widthAndHeight)
-import Plumage.Atom.PopOver.Types (DismissBehaviour(..), HookDismissBehaviour(..), Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), printPlacement)
-import Plumage.Atom.PopOver.View (toTransformOrigin)
+import Plumage.Atom.PopOver.Types (HookDismissBehaviour(..), Placement(..), PrimaryPlacement(..), SecondaryPlacement(..), printPlacement)
 import Plumage.Hooks.UsePopOver (usePopOver)
 import Plumage.Util.HTML as H
 import React.Basic.DOM as R
-import React.Basic.Emotion (auto, percent)
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 import Story.Container (inContainer)

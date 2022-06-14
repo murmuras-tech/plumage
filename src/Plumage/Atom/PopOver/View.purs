@@ -8,7 +8,6 @@ import Data.Int as Int
 import Data.Maybe (isNothing)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Traversable (for)
-import Debug (spy)
 import Fahrtwind (acceptClicks, positionAbsolute)
 import Fahrtwind.Style.BoxShadow (shadow)
 import Framer.Motion as M
