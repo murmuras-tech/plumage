@@ -43,8 +43,8 @@ rawComponent = unsafePerformEffect $ React.reactComponent "Tooltip" $
       [ R.div
           { children: [ child ]
           , ref: targetRef
-          , onMouseOut: handler_ $ guard isVisible hidePopOver
-          , onMouseOver: handler_ $ guard (not isVisible) showPopOver
+          , onMouseLeave: handler_ $ guard isVisible hidePopOver
+          , onMouseEnter: handler_ $ guard (not isVisible) showPopOver
           }
       , renderInPopOver tooltipContent
       ]
