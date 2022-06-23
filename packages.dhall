@@ -724,3 +724,11 @@ in  upstream
       ]
     , version = "main"
     }
+  with react-virtuoso =
+    { dependencies =
+        ( https://raw.githubusercontent.com/rowtype-yoga/purescript-react-virtuoso/main/spago.dhall
+            sha256:9c7c1ced896538360ba325dcefe912fed8c0207bc828f68ebadf5f3b83ee5012
+        ).dependencies
+    , repo = "https://github.com/rowtype-yoga/purescript-react-virtuoso.git"
+    , version = "5be142c5a651509e9e9a68582ed1807c029ba1b5"
+    }

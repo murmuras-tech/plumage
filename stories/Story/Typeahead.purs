@@ -2,24 +2,22 @@ module Story.Typeahead (default, typeahead) where
 
 import Prelude
 
-import Data.Array ((\\))
 import Data.Array as Array
 import Data.Either (Either(..))
 import Data.String (Pattern(..))
 import Data.String as String
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
-import Debug (spy)
 import Effect (Effect)
 import Effect.Aff (delay)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Effect.Random (randomRange)
-import Fahrtwind (background, gray, height', widthFull)
+import Fahrtwind (background, globalStyles, gray, height', widthFull)
 import Plumage.Molecule.Typeahead (mkTypeahead)
 import Plumage.Molecule.Typeahead as Typeahead
 import Plumage.Util.HTML as H
-import React.Basic (JSX)
+import React.Basic (JSX, fragment)
 import React.Basic.DOM as R
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
@@ -31,7 +29,9 @@ default ∷ { title ∷ String }
 default = { title: "Molecule/Typeahead" }
 
 typeahead ∷ Effect JSX
-typeahead = myTypeahead <@> unit
+typeahead = do
+  typeahead ← myTypeahead
+  pure $ fragment [ E.global </> { styles: globalStyles }, typeahead unit ]
 
 myTypeahead ∷ React.Component Unit
 myTypeahead = do
@@ -47,12 +47,11 @@ myTypeahead = do
               let
                 filteredWords = words
                   # Array.filter (String.contains (Pattern s))
-                  # Array.take 20
               pure $ Right filteredWords
 
-          , renderSuggestion: R.text
+          , renderSuggestion: \{ isScrolling } → R.text
           , onSelected: \s → setSelection (Array.cons s) *> pure
-              { dismiss: true }
+              { inputValue: s, dismiss: true }
           , onDismiss: Console.log "dismissed"
           , onRemoved: \s → setSelection (Array.delete s)
           , placeholder: "Search"

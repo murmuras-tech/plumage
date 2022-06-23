@@ -22,7 +22,6 @@ import Unsafe.Reference (reallyUnsafeRefEq)
 import Web.Event.Event (EventType(..))
 import Web.Event.EventTarget (addEventListener, eventListener, removeEventListener)
 import Web.HTML (window)
-import Web.HTML.Event.EventTypes as EventType
 import Web.HTML.HTMLDocument as HTMLDocument
 import Web.HTML.Window (document, innerHeight, innerWidth, requestAnimationFrame, scrollX, scrollY)
 import Web.UIEvent.MouseEvent as MouseEvent
@@ -39,6 +38,7 @@ type PopOverViewProps =
   , placementRef ∷ NodeRef
   , childʔ ∷ Maybe JSX
   , hide ∷ Effect Unit
+  , isAnimating ∷ Boolean → Effect Unit
   }
 
 mkPopOverView ∷ React.Component PopOverViewProps
@@ -95,7 +95,7 @@ mkPopOverView = do
         { transformOrigin: toTransformOrigin placement
         }
       initial = M.initial $ R.css
-        { scale: 0.25
+        { scale: 0.67
         , opacity: 0
         }
       animate = M.animate $ R.css
@@ -106,12 +106,13 @@ mkPopOverView = do
         }
       exit =
         M.exit $ R.css
-          { scale: 0.25
+          { scale: 0.67
           , opacity: 0
           , transition:
-              { type: "spring", bounce: 0.2, duration: 0.3 }
+              { type: "spring", bounce: 0.2, duration: 0.15 }
           }
       onAnimationComplete = M.onAnimationComplete \fgn → do
+        props.isAnimating false
         if (reallyUnsafeRefEq fgn exit) then
           setVisiblePlacement Nothing
         else if (reallyUnsafeRefEq fgn animate) then do
@@ -119,6 +120,7 @@ mkPopOverView = do
         else mempty
 
       onAnimationStart = M.onAnimationStart do
+        props.isAnimating true
         setAnimationDone false
 
       getBBWidthAndHeight = ado

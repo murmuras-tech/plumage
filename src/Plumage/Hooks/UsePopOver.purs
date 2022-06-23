@@ -41,6 +41,7 @@ usePopOver options = coerceHook React.do
       , dismissBehaviourʔ: options.dismissBehaviourʔ <#> toDismissBehaviour
           targetRef
       , containerId: options.containerId
+      , isAnimating: mempty
       }
   pure
     { targetRef

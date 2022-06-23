@@ -35,7 +35,8 @@
     "framer-motion": "^6.3.10",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
-    "react-laag": "^2.0.4"
+    "react-laag": "^2.0.4",
+    "react-virtuoso": "^2.13.3"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^6.5.6",
