@@ -51,16 +51,21 @@ import Web.HTML.Window (document)
 import Yoga.Block.Hook.Key (KeyCode)
 import Yoga.Block.Hook.Key as Key
 
+type Overscan = { main ∷ Int, reverse ∷ Int }
+type ScrollSeekPlaceholder = ReactComponent { height ∷ Number, index ∷ Int }
+
 type Args a =
   { debounce ∷ Milliseconds
   , suggestionToText ∷ a → String
   , contextMenuLayerId ∷ String
+  , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
+  , overscan ∷ Overscan
   }
 
 type Props a =
   { onSelected ∷ a → Effect { inputValue ∷ String, dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
-  , renderSuggestion ∷ { isScrolling ∷ Boolean } → a → JSX
+  , renderSuggestion ∷ a → JSX
   , loadSuggestions ∷ String → Aff (Either Error (Array a))
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
@@ -81,12 +86,17 @@ mkDefaultArgs
   { debounce: Milliseconds 200.0
   , suggestionToText
   , contextMenuLayerId
+  , scrollSeekPlaceholderʔ: Nothing
+  , overscan: { main: 100, reverse: 100 }
   }
 
 mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
   typeaheadView ← mkTypeaheadView
-    { contextMenuLayerId: args.contextMenuLayerId }
+    { contextMenuLayerId: args.contextMenuLayerId
+    , overscan: args.overscan
+    , scrollSeekPlaceholderʔ: args.scrollSeekPlaceholderʔ
+    }
   React.reactComponent "Typeahead" \props → React.do
     input /\ setInput ← React.useState' ""
     suggestions /\ setSuggestions ← React.useState' RemoteData.NotAsked
@@ -119,7 +129,7 @@ type ViewProps a =
   , input ∷ String
   , setInput ∷ String → Effect Unit
   , suggestions ∷ RemoteData Error (Array a)
-  , renderSuggestion ∷ { isScrolling ∷ Boolean } → a → JSX
+  , renderSuggestion ∷ a → JSX
   , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
   , onSelected ∷ a → Effect { inputValue ∷ String, dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
@@ -130,10 +140,13 @@ type ViewProps a =
 
 mkTypeaheadView ∷
   ∀ a.
-  { contextMenuLayerId ∷ String } →
+  { contextMenuLayerId ∷ String
+  , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
+  , overscan ∷ Overscan
+  } →
   Effect (ReactComponent (ViewProps a))
 mkTypeaheadView
-  { contextMenuLayerId } = do
+  args@{ contextMenuLayerId } = do
   -- loader ← mkLoader
   loadingBar ← mkKittLoadingBar
   popOver ← mkPopOverView
@@ -164,6 +177,7 @@ mkTypeaheadView
       , activeIndex
       , updateActiveIndex
       , placeholder
+
       } = props
     id ← React.useId
     -- The previous suggestions so we have something to display while loading
@@ -316,7 +330,7 @@ mkTypeaheadView
                 Console.log "On click"
                 onSelected suggestion
             }
-          /> [ renderSuggestion { isScrolling } suggestion ]
+          /> [ renderSuggestion suggestion ]
 
       resultsContainer =
         R.div'
@@ -336,8 +350,15 @@ mkTypeaheadView
 
       suggestionElements =
         virtuosoImpl </>
-          { overscan: { main: 1000, reverse: 1000 }
-          , components: { "Item": itemCompo, "List": listCompo }
+          { overscan: args.overscan
+
+          , components: case args.scrollSeekPlaceholderʔ of
+              Nothing → { "Item": itemCompo, "List": listCompo }
+              Just scrollSeekPlaceholder → unsafeCoerce
+                { "Item": itemCompo
+                , "List": listCompo
+                , "ScrollSeekPlaceholder": scrollSeekPlaceholder
+                }
           , isScrolling: mkEffectFn1 setIsScrolling
           , style: R.css
               { height: 230, width: "100%" }

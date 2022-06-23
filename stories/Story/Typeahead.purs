@@ -49,7 +49,7 @@ myTypeahead = do
                   # Array.filter (String.contains (Pattern s))
               pure $ Right filteredWords
 
-          , renderSuggestion: \{ isScrolling } → R.text
+          , renderSuggestion: R.text
           , onSelected: \s → setSelection (Array.cons s) *> pure
               { inputValue: s, dismiss: true }
           , onDismiss: Console.log "dismissed"
@@ -61,11 +61,7 @@ myTypeahead = do
           (R.text <$> selection)
       ]
 
-typeaheadArgs ∷
-  { contextMenuLayerId ∷ String
-  , debounce ∷ Milliseconds
-  , suggestionToText ∷ String → String
-  }
+typeaheadArgs ∷ Typeahead.Args String
 typeaheadArgs = Typeahead.mkDefaultArgs
   { suggestionToText: identity
   , contextMenuLayerId: "cm"
