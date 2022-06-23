@@ -21,6 +21,7 @@ import Fahrtwind.Style.Cursor (cursorPointer)
 import Fahrtwind.Style.Display.Flex (flexCol, gap)
 import Fahrtwind.Style.ScollBar (scrollBar)
 import Framer.Motion as M
+import MotionValue (isAnimating)
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
 import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
@@ -127,7 +128,7 @@ mkTypeahead args = do
         , updateActiveIndex
         , onSelected: props.onSelected
         , onRemoved: props.onRemoved
-        , onDismiss: props.onDismiss
+        , onDismiss: setSuggestions RemoteData.NotAsked *> props.onDismiss
         , placeholder: props.placeholder
         , beforeInput: props.beforeInput
         , renderSuggestion: props.renderSuggestion
@@ -292,6 +293,7 @@ mkTypeaheadView
                 , className: "plm-input"
                 , value: input
                 , onChange: handler targetValue (traverse_ setInput)
+                , onMouseEnter: handler_ (when focusIsWithin focusInput)
                 , onKeyUp:
                     handler
                       SE.key
@@ -364,8 +366,6 @@ mkTypeaheadView
               RemoteData.Failure _ → prevSuggs
               RemoteData.Success suggs → suggs
           , itemContent: mkFn3 wrapSuggestion
-
-          , onMouseOut: handler_ (when focusIsWithin focusInput)
           }
 
     useEffect focusIsWithin do
@@ -394,6 +394,7 @@ mkTypeaheadView
             for_ (suggʔ >>= HTMLElement.fromElement) focus
       mempty
 
+resultsContainerStyle ∷ E.Style
 resultsContainerStyle =
   textCol TW.gray._700
     <> background' (var ("--plm-popupBackground-colour"))

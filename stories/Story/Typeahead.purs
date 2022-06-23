@@ -64,11 +64,10 @@ myTypeahead = do
 
 typeaheadArgs ∷ Typeahead.Args String
 typeaheadArgs =
-  ( Typeahead.mkDefaultArgs
-      { suggestionToText: identity
-      , contextMenuLayerId: "cm"
-      }
-  ) { containerStyle = F.width 900 }
+  Typeahead.mkDefaultArgs
+    { suggestionToText: identity
+    , contextMenuLayerId: "cm"
+    }
 
 words ∷ Array String
 words =
