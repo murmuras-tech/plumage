@@ -1,1070 +1,523 @@
-module Story.Typeahead (default, typeahead) where
+module Plumage.Molecule.Typeahead where
 
-import Prelude
+import Yoga.Prelude.View
 
+import Data.Array ((!!))
 import Data.Array as Array
-import Data.Either (Either(..))
-import Data.String (Pattern(..))
-import Data.String as String
+import Data.Function.Uncurried (mkFn3)
 import Data.Time.Duration (Milliseconds(..))
-import Data.Tuple.Nested ((/\))
-import Effect (Effect)
-import Effect.Aff (delay)
-import Effect.Class (liftEffect)
+import Effect.Aff (Aff, attempt, delay)
 import Effect.Class.Console as Console
-import Effect.Random (randomRange)
-import Fahrtwind (background, globalStyles, gray, height', widthFull)
-import Plumage.Molecule.Typeahead (mkTypeahead)
-import Plumage.Molecule.Typeahead as Typeahead
+import Effect.Exception (Error)
+import Effect.Uncurried (mkEffectFn1)
+import Fahrtwind (background, background', borderTop, gray, itemsStart, justifyEnd, outlineNone, roundedLg, shadowLg, textXs, widthFull)
+import Fahrtwind as F
+import Fahrtwind.Style (pB, pT, pX, pY)
+import Fahrtwind.Style.Border (border, borderCol)
+import Fahrtwind.Style.Color.Tailwind as TW
+import Fahrtwind.Style.Color.Text (textCol)
+import Fahrtwind.Style.Cursor (cursorPointer)
+import Fahrtwind.Style.Display.Flex (flexCol, gap)
+import Fahrtwind.Style.ScollBar (scrollBar)
+import Framer.Motion as M
+import Network.RemoteData (RemoteData)
+import Network.RemoteData as RemoteData
+import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
+import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
+import Plumage.Atom.PopOver.Types (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..))
+import Plumage.Atom.PopOver.View (mkPopOverView)
 import Plumage.Util.HTML as H
-import React.Basic (JSX, fragment)
+import Prim.Row (class Lacks, class Nub)
+import React.Aria.Interactions2 (useFocus, useFocusWithin)
 import React.Basic.DOM as R
+import React.Basic.DOM.Events (capture_)
+import React.Basic.DOM.Events as SE
+import React.Basic.Emotion (var)
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
-import Story.Container (inContainer)
-import Yoga ((</>))
-import Yoga.Block as Block
+import React.Basic.Hooks.Aff (useAff)
+import React.Virtuoso (virtuosoImpl)
+import Record as Record
+import Type.Proxy (Proxy(..))
+import Unsafe.Coerce (unsafeCoerce)
+import Untagged.Union (maybeToUor, uorToMaybe)
+import Web.DOM.Document (toNonElementParentNode)
+import Web.DOM.NonElementParentNode (getElementById)
+import Web.HTML (window)
+import Web.HTML.HTMLDocument (activeElement)
+import Web.HTML.HTMLDocument as HTMLDocument
+import Web.HTML.HTMLElement as HTMLElement
+import Web.HTML.Window (document)
+import Yoga.Block.Hook.Key (KeyCode)
+import Yoga.Block.Hook.Key as Key
 
-default ∷ { title ∷ String }
-default = { title: "Molecule/Typeahead" }
+type Overscan = { main ∷ Int, reverse ∷ Int }
+type ScrollSeekPlaceholder = ReactComponent { height ∷ Number, index ∷ Int }
+type ScrollSeekConfiguration =
+  { enter ∷ Number → Boolean, exit ∷ Number → Boolean }
 
-typeahead ∷ Effect JSX
-typeahead = do
-  typeahead ← myTypeahead
-  pure $ fragment [ E.global </> { styles: globalStyles }, typeahead unit ]
-
-myTypeahead ∷ React.Component Unit
-myTypeahead = do
-  typeaheadView ∷ _ (Typeahead.Props String) ← mkTypeahead typeaheadArgs
-  React.component "MyTypeahead" \_ → React.do
-    selection /\ setSelection ← React.useState []
-    pure $ inContainer $ H.div_
-      (height' (E.px 5000) <> widthFull <> background gray._200)
-      [ typeaheadView </>
-          { loadSuggestions: \s → do
-              ms ← randomRange 200.0 1500.0 # liftEffect
-              delay (ms # Milliseconds)
-              let
-                filteredWords = words
-                  # Array.filter (String.contains (Pattern s))
-              pure $ Right filteredWords
-
-          , renderSuggestion: R.text
-          , onSelected: \s → setSelection (Array.cons s) *> pure
-              { inputValue: s, dismiss: true }
-          , onDismiss: Console.log "dismissed"
-          , onRemoved: \s → setSelection (Array.delete s)
-          , placeholder: "Search"
-          , beforeInput: R.text "hoho"
-          }
-      , Block.cluster { justify: "flex-end", space: "8px" }
-          (R.text <$> selection)
-      ]
-
-typeaheadArgs ∷ Typeahead.Args String
-typeaheadArgs = Typeahead.mkDefaultArgs
-  { suggestionToText: identity
-  , contextMenuLayerId: "cm"
+type Args a =
+  { debounce ∷ Milliseconds
+  , suggestionToText ∷ a → String
+  , contextMenuLayerId ∷ String
+  , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
+  , overscan ∷ Overscan
+  , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   }
 
-words ∷ Array String
-words =
-  [ "a"
-  , " about"
-  , " above"
-  , " across"
-  , " act"
-  , " active"
-  , " activity"
-  , " add"
-  , " afraid"
-  , " after"
-  , " again"
-  , " age"
-  , " ago"
-  , " agree"
-  , " air"
-  , " all"
-  , " alone"
-  , " along"
-  , " already"
-  , " always"
-  , " am"
-  , " amount"
-  , " an"
-  , " and"
-  , " angry"
-  , " another"
-  , " answer"
-  , " any"
-  , " anyone"
-  , " anything"
-  , " anytime"
-  , " appear"
-  , " apple"
-  , " are"
-  , " area"
-  , " arm"
-  , " army"
-  , " around"
-  , " arrive"
-  , " art"
-  , " as"
-  , " ask"
-  , " at"
-  , " attack"
-  , " aunt"
-  , " autumn"
-  , " away"
-  , " baby"
-  , " back"
-  , " bad"
-  , " bag"
-  , " ball"
-  , " bank"
-  , " base"
-  , " basket"
-  , " bath"
-  , " be"
-  , " bean"
-  , " bear"
-  , " beautiful"
-  , " bed"
-  , " bedroom"
-  , " beer"
-  , " behave"
-  , " before"
-  , " begin"
-  , " behind"
-  , " bell"
-  , " below"
-  , " besides"
-  , " best"
-  , " better"
-  , " between"
-  , " big"
-  , " bird"
-  , " birth"
-  , " birthday"
-  , " bit"
-  , " bite"
-  , " black"
-  , " bleed"
-  , " block"
-  , " blood"
-  , " blow"
-  , " blue"
-  , " board"
-  , " boat"
-  , " body"
-  , " boil"
-  , " bone"
-  , " book"
-  , " border"
-  , " born"
-  , " borrow"
-  , " both"
-  , " bottle"
-  , " bottom"
-  , " bowl"
-  , " box"
-  , " boy"
-  , " branch"
-  , " brave"
-  , " bread"
-  , " break"
-  , " breakfast"
-  , " breathe"
-  , " bridge"
-  , " bright"
-  , " bring"
-  , " brother"
-  , " brown"
-  , " brush"
-  , " build"
-  , " burn"
-  , " business"
-  , " bus"
-  , " busy"
-  , " but"
-  , " buy"
-  , " by"
-  , " cake"
-  , " call"
-  , " can"
-  , " candle"
-  , " cap"
-  , " car"
-  , " card"
-  , " care"
-  , " careful"
-  , " careless"
-  , " carry"
-  , " case"
-  , " cat"
-  , " catch"
-  , " central"
-  , " century"
-  , " certain"
-  , " chair"
-  , " chance"
-  , " change"
-  , " chase"
-  , " cheap"
-  , " cheese"
-  , " chicken"
-  , " child"
-  , " children"
-  , " chocolate"
-  , " choice"
-  , " choose"
-  , " circle"
-  , " city"
-  , " class"
-  , " clever"
-  , " clean"
-  , " clear"
-  , " climb"
-  , " clock"
-  , " cloth"
-  , " clothes"
-  , " cloud"
-  , " cloudy"
-  , " close"
-  , " coffee"
-  , " coat"
-  , " coin"
-  , " cold"
-  , " collect"
-  , " colour"
-  , " comb"
-  , " comfortable"
-  , " common"
-  , " compare"
-  , " come"
-  , " complete"
-  , " computer"
-  , " condition"
-  , " continue"
-  , " control"
-  , " cook"
-  , " cool"
-  , " copper"
-  , " corn"
-  , " corner"
-  , " correct"
-  , " cost"
-  , " contain"
-  , " count"
-  , " country"
-  , " course"
-  , " cover"
-  , " crash"
-  , " cross"
-  , " cry"
-  , " cup"
-  , " cupboard"
-  , " cut"
-  , " dance"
-  , " dangerous"
-  , " dark"
-  , " daughter"
-  , " day"
-  , " dead"
-  , " decide"
-  , " decrease"
-  , " deep"
-  , " deer"
-  , " depend"
-  , " desk"
-  , " destroy"
-  , " develop"
-  , " die"
-  , " different"
-  , " difficult"
-  , " dinner"
-  , " direction"
-  , " dirty"
-  , " discover"
-  , " dish"
-  , " do"
-  , " dog"
-  , " door"
-  , " double"
-  , " down"
-  , " draw"
-  , " dream"
-  , " dress"
-  , " drink"
-  , " drive"
-  , " drop"
-  , " dry"
-  , " duck"
-  , " dust"
-  , " duty"
-  , " each"
-  , " ear"
-  , " early"
-  , " earn"
-  , " earth"
-  , " east"
-  , " easy"
-  , " eat"
-  , " education"
-  , " effect"
-  , " egg"
-  , " eight"
-  , " either"
-  , " electric"
-  , " elephant"
-  , " else"
-  , " empty"
-  , " end"
-  , " enemy"
-  , " enjoy"
-  , " enough"
-  , " enter"
-  , " equal"
-  , " entrance"
-  , " escape"
-  , " even"
-  , " evening"
-  , " event"
-  , " ever"
-  , " every"
-  , " everyone"
-  , " exact"
-  , " everybody"
-  , " examination"
-  , " example"
-  , " except"
-  , " excited"
-  , " exercise"
-  , " expect"
-  , " expensive"
-  , " explain"
-  , " extremely"
-  , " eye"
-  , " face"
-  , " fact"
-  , " fail"
-  , " fall"
-  , " false"
-  , " family"
-  , " famous"
-  , " far"
-  , " farm"
-  , " father"
-  , " fast"
-  , " fat"
-  , " fault"
-  , " fear"
-  , " feed"
-  , " feel"
-  , " female"
-  , " fever"
-  , " few"
-  , " fight"
-  , " fill"
-  , " film"
-  , " find"
-  , " fine"
-  , " finger"
-  , " finish"
-  , " fire"
-  , " first"
-  , " fish"
-  , " fit"
-  , " five"
-  , " fix"
-  , " flag"
-  , " flat"
-  , " float"
-  , " floor"
-  , " flour"
-  , " flower"
-  , " fly"
-  , " fold"
-  , " food"
-  , " fool"
-  , " foot"
-  , " football"
-  , " for"
-  , " force"
-  , " foreign"
-  , " forest"
-  , " forget"
-  , " forgive"
-  , " fork"
-  , " form"
-  , " fox"
-  , " four"
-  , " free"
-  , " freedom"
-  , " freeze"
-  , " fresh"
-  , " friend"
-  , " friendly"
-  , " from"
-  , " front"
-  , " fruit"
-  , " full"
-  , " fun"
-  , " funny"
-  , " furniture"
-  , " further"
-  , " future"
-  , " game"
-  , " garden"
-  , " gate"
-  , " general"
-  , " gentleman"
-  , " get"
-  , " gift"
-  , " give"
-  , " glad"
-  , " glass"
-  , " go"
-  , " goat"
-  , " god"
-  , " gold"
-  , " good"
-  , " goodbye"
-  , " grandfather"
-  , " grandmother"
-  , " grass"
-  , " grave"
-  , " great"
-  , " green"
-  , " gray"
-  , " ground"
-  , " group"
-  , " grow"
-  , " gun"
-  , " hair"
-  , " half"
-  , " hall"
-  , " hammer"
-  , " hand"
-  , " happen"
-  , " happy"
-  , " hard"
-  , " hat"
-  , " hate"
-  , " have"
-  , " he"
-  , " head"
-  , " healthy"
-  , " hear"
-  , " heavy"
-  , " heart"
-  , " heaven"
-  , " height"
-  , " hello"
-  , " help"
-  , " hen"
-  , " her"
-  , " here"
-  , " hers"
-  , " hide"
-  , " high"
-  , " hill"
-  , " him"
-  , " his"
-  , " hit"
-  , " hobby"
-  , " hold"
-  , " hole"
-  , " holiday"
-  , " home"
-  , " hope"
-  , " horse"
-  , " hospital"
-  , " hot"
-  , " hotel"
-  , " house"
-  , " how"
-  , " hundred"
-  , " hungry"
-  , " hour"
-  , " hurry"
-  , " husband"
-  , " hurt"
-  , " I"
-  , " ice"
-  , " idea"
-  , " if"
-  , " important"
-  , " in"
-  , " increase"
-  , " inside"
-  , " into"
-  , " introduce"
-  , " invent"
-  , " iron"
-  , " invite"
-  , " is"
-  , " island"
-  , " it"
-  , " its"
-  , " jelly"
-  , " job"
-  , " join"
-  , " juice"
-  , " jump"
-  , " just"
-  , " keep"
-  , " key"
-  , " kill"
-  , " kind"
-  , " king"
-  , " kitchen"
-  , " knee"
-  , " knife"
-  , " knock"
-  , " know"
-  , " ladder"
-  , " lady"
-  , " lamp"
-  , " land"
-  , " large"
-  , " last"
-  , " late"
-  , " lately"
-  , " laugh"
-  , " lazy"
-  , " lead"
-  , " leaf"
-  , " learn"
-  , " leave"
-  , " leg"
-  , " left"
-  , " lend"
-  , " length"
-  , " less"
-  , " lesson"
-  , " let"
-  , " letter"
-  , " library"
-  , " lie"
-  , " life"
-  , " light"
-  , " like"
-  , " lion"
-  , " lip"
-  , " list"
-  , " listen"
-  , " little"
-  , " live"
-  , " lock"
-  , " lonely"
-  , " long"
-  , " look"
-  , " lose"
-  , " lot"
-  , " love"
-  , " low"
-  , " lower"
-  , " luck"
-  , " machine"
-  , " main"
-  , " make"
-  , " male"
-  , " man"
-  , " many"
-  , " map"
-  , " mark"
-  , " market"
-  , " marry"
-  , " matter"
-  , " may"
-  , " me"
-  , " meal"
-  , " mean"
-  , " measure"
-  , " meat"
-  , " medicine"
-  , " meet"
-  , " member"
-  , " mention"
-  , " method"
-  , " middle"
-  , " milk"
-  , " million"
-  , " mind"
-  , " minute"
-  , " miss"
-  , " mistake"
-  , " mix"
-  , " model"
-  , " modern"
-  , " moment"
-  , " money"
-  , " monkey"
-  , " month"
-  , " moon"
-  , " more"
-  , " morning"
-  , " most"
-  , " mother"
-  , " mountain"
-  , " mouth"
-  , " move"
-  , " much"
-  , " music"
-  , " must"
-  , " my"
-  , " name"
-  , " narrow"
-  , " nation"
-  , " nature"
-  , " near"
-  , " nearly"
-  , " neck"
-  , " need"
-  , " needle"
-  , " neighbour"
-  , " neither"
-  , " net"
-  , " never"
-  , " new"
-  , " news"
-  , " newspaper"
-  , " next"
-  , " nice"
-  , " night"
-  , " nine"
-  , " no"
-  , " noble"
-  , " noise"
-  , " none"
-  , " nor"
-  , " north"
-  , " nose"
-  , " not"
-  , " nothing"
-  , " notice"
-  , " now"
-  , " number"
-  , " obey"
-  , " object"
-  , " ocean"
-  , " of"
-  , " off"
-  , " offer"
-  , " office"
-  , " often"
-  , " oil"
-  , " old"
-  , " on"
-  , " one"
-  , " only"
-  , " open"
-  , " opposite"
-  , " or"
-  , " orange"
-  , " order"
-  , " other"
-  , " our"
-  , " out"
-  , " outside"
-  , " over"
-  , " own"
-  , " page"
-  , " pain"
-  , " paint"
-  , " pair"
-  , " pan"
-  , " paper"
-  , " parent"
-  , " park"
-  , " part"
-  , " partner"
-  , " party"
-  , " pass"
-  , " past"
-  , " path"
-  , " pay"
-  , " peace"
-  , " pen"
-  , " pencil"
-  , " people"
-  , " pepper"
-  , " per"
-  , " perfect"
-  , " period"
-  , " person"
-  , " petrol"
-  , " photograph"
-  , " piano"
-  , " pick"
-  , " picture"
-  , " piece"
-  , " pig"
-  , " pin"
-  , " pink"
-  , " place"
-  , " plane"
-  , " plant"
-  , " plastic"
-  , " plate"
-  , " play"
-  , " please"
-  , " pleased"
-  , " plenty"
-  , " pocket"
-  , " point"
-  , " poison"
-  , " police"
-  , " polite"
-  , " pool"
-  , " poor"
-  , " popular"
-  , " position"
-  , " possible"
-  , " potato"
-  , " pour"
-  , " power"
-  , " present"
-  , " press"
-  , " pretty"
-  , " prevent"
-  , " price"
-  , " prince"
-  , " prison"
-  , " private"
-  , " prize"
-  , " probably"
-  , " problem"
-  , " produce"
-  , " promise"
-  , " proper"
-  , " protect"
-  , " provide"
-  , " public"
-  , " pull"
-  , " punish"
-  , " pupil"
-  , " push"
-  , " put"
-  , " queen"
-  , " question"
-  , " quick"
-  , " quiet"
-  , " quite"
-  , " radio"
-  , " rain"
-  , " rainy"
-  , " raise"
-  , " reach"
-  , " read"
-  , " ready"
-  , " real"
-  , " really"
-  , " receive"
-  , " record"
-  , " red"
-  , " remember"
-  , " remind"
-  , " remove"
-  , " rent"
-  , " repair"
-  , " repeat"
-  , " reply"
-  , " report"
-  , " rest"
-  , " restaurant"
-  , " result"
-  , " return"
-  , " rice"
-  , " rich"
-  , " ride"
-  , " right"
-  , " ring"
-  , " rise"
-  , " road"
-  , " rob"
-  , " rock"
-  , " room"
-  , " round"
-  , " rubber"
-  , " rude"
-  , " rule"
-  , " ruler"
-  , " run"
-  , " rush"
-  , " sad"
-  , " safe"
-  , " sail"
-  , " salt"
-  , " same"
-  , " sand"
-  , " save"
-  , " say"
-  , " school"
-  , " science"
-  , " scissors"
-  , " search"
-  , " seat"
-  , " second"
-  , " see"
-  , " seem"
-  , " sell"
-  , " send"
-  , " sentence"
-  , " serve"
-  , " seven"
-  , " several"
-  , " sex"
-  , " shade"
-  , " shadow"
-  , " shake"
-  , " shape"
-  , " share"
-  , " sharp"
-  , " she"
-  , " sheep"
-  , " sheet"
-  , " shelf"
-  , " shine"
-  , " ship"
-  , " shirt"
-  , " shoe"
-  , " shoot"
-  , " shop"
-  , " short"
-  , " should"
-  , " shoulder"
-  , " shout"
-  , " show"
-  , " sick"
-  , " side"
-  , " signal"
-  , " silence"
-  , " silly"
-  , " silver"
-  , " similar"
-  , " simple"
-  , " single"
-  , " since"
-  , " sing"
-  , " sink"
-  , " sister"
-  , " sit"
-  , " six"
-  , " size"
-  , " skill"
-  , " skin"
-  , " skirt"
-  , " sky"
-  , " sleep"
-  , " slip"
-  , " slow"
-  , " small"
-  , " smell"
-  , " smile"
-  , " smoke"
-  , " snow"
-  , " so"
-  , " soap"
-  , " sock"
-  , " soft"
-  , " some"
-  , " someone"
-  , " something"
-  , " sometimes"
-  , " son"
-  , " soon"
-  , " sorry"
-  , " sound"
-  , " soup"
-  , " south"
-  , " space"
-  , " speak"
-  , " special"
-  , " speed"
-  , " spell"
-  , " spend"
-  , " spoon"
-  , " sport"
-  , " spread"
-  , " spring"
-  , " square"
-  , " stamp"
-  , " stand"
-  , " star"
-  , " start"
-  , " station"
-  , " stay"
-  , " steal"
-  , " steam"
-  , " step"
-  , " still"
-  , " stomach"
-  , " stone"
-  , " stop"
-  , " store"
-  , " storm"
-  , " story"
-  , " strange"
-  , " street"
-  , " strong"
-  , " structure"
-  , " student"
-  , " study"
-  , " stupid"
-  , " subject"
-  , " substance"
-  , " successful"
-  , " such"
-  , " sudden"
-  , " sugar"
-  , " suitable"
-  , " summer"
-  , " sun"
-  , " sunny"
-  , " support"
-  , " sure"
-  , " surprise"
-  , " sweet"
-  , " swim"
-  , " sword"
-  , " table"
-  , " take"
-  , " talk"
-  , " tall"
-  , " taste"
-  , " taxi"
-  , " tea"
-  , " teach"
-  , " team"
-  , " tear"
-  , " telephone"
-  , " television"
-  , " tell"
-  , " ten"
-  , " tennis"
-  , " terrible"
-  , " test"
-  , " than"
-  , " that"
-  , " the"
-  , " their"
-  , " then"
-  , " there"
-  , " therefore"
-  , " these"
-  , " thick"
-  , " thin"
-  , " thing"
-  , " think"
-  , " third"
-  , " this"
-  , " though"
-  , " threat"
-  , " three"
-  , " tidy"
-  , " tie"
-  , " title"
-  , " to"
-  , " today"
-  , " toe"
-  , " together"
-  , " tomorrow"
-  , " tonight"
-  , " too"
-  , " tool"
-  , " tooth"
-  , " top"
-  , " total"
-  , " touch"
-  , " town"
-  , " train"
-  , " tram"
-  , " travel"
-  , " tree"
-  , " trouble"
-  , " true"
-  , " trust"
-  , " twice"
-  , " try"
-  , " turn"
-  , " type"
-  , " ugly"
-  , " uncle"
-  , " under"
-  , " understand"
-  , " unit"
-  , " until"
-  , " up"
-  , " use"
-  , " useful"
-  , " usual"
-  , " usually"
-  , " vegetable"
-  , " very"
-  , " village"
-  , " voice"
-  , " visit"
-  , " wait"
-  , " wake"
-  , " walk"
-  , " want"
-  , " warm"
-  , " was"
-  , " wash"
-  , " waste"
-  , " watch"
-  , " water"
-  , " way"
-  , " we"
-  , " weak"
-  , " wear"
-  , " weather"
-  , " wedding"
-  , " week"
-  , " weight"
-  , " welcome"
-  , " were"
-  , " well"
-  , " west"
-  , " wet"
-  , " what"
-  , " wheel"
-  , " when"
-  , " where"
-  , " which"
-  , " while"
-  , " white"
-  , " who"
-  , " why"
-  , " wide"
-  , " wife"
-  , " wild"
-  , " will"
-  , " win"
-  , " wind"
-  , " window"
-  , " wine"
-  , " winter"
-  , " wire"
-  , " wise"
-  , " wish"
-  , " with"
-  , " without"
-  , " woman"
-  , " wonder"
-  , " word"
-  , " work"
-  , " world"
-  , " worry"
-  , " yard"
-  , " yell"
-  , " yesterday"
-  , " yet"
-  , " you"
-  , " young"
-  , " your"
-  , " zero"
-  , " zoo"
-  ]
+type Props a =
+  { onSelected ∷ a → Effect { inputValue ∷ String, dismiss ∷ Boolean }
+  , onRemoved ∷ a → Effect Unit
+  , renderSuggestion ∷ a → JSX
+  , loadSuggestions ∷ String → Aff (Either Error (Array a))
+  , onDismiss ∷ Effect Unit
+  , placeholder ∷ String
+  , beforeInput ∷ JSX
+  }
+
+mkDefaultArgs ∷
+  ∀ a.
+  { suggestionToText ∷ a → String
+  , contextMenuLayerId ∷ String
+  } →
+  Args a
+mkDefaultArgs
+  { suggestionToText
+  , contextMenuLayerId
+  } =
+  { debounce: Milliseconds 200.0
+  , suggestionToText
+  , contextMenuLayerId
+  , scrollSeekPlaceholderʔ: Nothing
+  , scrollSeekConfigurationʔ: Nothing
+  , overscan: { main: 100, reverse: 100 }
+  }
+
+mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
+mkTypeahead args = do
+  typeaheadView ← mkTypeaheadView
+    { contextMenuLayerId: args.contextMenuLayerId
+    , overscan: args.overscan
+    , scrollSeekPlaceholderʔ: args.scrollSeekPlaceholderʔ
+    , scrollSeekConfigurationʔ: args.scrollSeekConfigurationʔ
+    }
+  React.reactComponent "Typeahead" \props → React.do
+    input /\ setInput ← React.useState' ""
+    suggestions /\ setSuggestions ← React.useState' RemoteData.NotAsked
+    activeIndex /\ updateActiveIndex ← React.useState Nothing
+    useAff input do
+      setSuggestions RemoteData.Loading # liftEffect
+      delay args.debounce
+      result ← attempt (props.loadSuggestions input)
+      let rd = RemoteData.fromEither (join result)
+      setSuggestions rd # liftEffect
+
+    pure
+      $ typeaheadView
+      </>
+        { input
+        , setInput
+        , suggestions
+        , activeIndex
+        , updateActiveIndex
+        , onSelected: props.onSelected
+        , onRemoved: props.onRemoved
+        , onDismiss: props.onDismiss
+        , placeholder: props.placeholder
+        , beforeInput: props.beforeInput
+        , renderSuggestion: props.renderSuggestion
+        }
+
+type ViewProps a =
+  { activeIndex ∷ Maybe Int
+  , input ∷ String
+  , setInput ∷ String → Effect Unit
+  , suggestions ∷ RemoteData Error (Array a)
+  , renderSuggestion ∷ a → JSX
+  , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
+  , onSelected ∷ a → Effect { inputValue ∷ String, dismiss ∷ Boolean }
+  , onRemoved ∷ a → Effect Unit
+  , onDismiss ∷ Effect Unit
+  , placeholder ∷ String
+  , beforeInput ∷ JSX
+  }
+
+mkTypeaheadView ∷
+  ∀ a.
+  { contextMenuLayerId ∷ String
+  , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
+  , overscan ∷ Overscan
+  , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
+  } →
+  Effect (ReactComponent (ViewProps a))
+mkTypeaheadView
+  args@{ contextMenuLayerId } = do
+  -- loader ← mkLoader
+  loadingBar ← mkKittLoadingBar
+  popOver ← mkPopOverView
+  itemCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadItem"
+    resultContainerStyle
+    M.li
+  listCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadList"
+    ( E.css
+        { "& > *": E.nested $ E.css { scrollBehavior: E.str "smooth" }
+        } <>
+        scrollBar
+          { background: F.green._200
+          , col: F.green._400
+          , width: 8
+          , borderRadius: 2
+          , borderWidth: 4
+          }
+    )
+    R.ul'
+
+  React.reactComponent "TypeaheadView" \(props ∷ ViewProps a) → React.do
+    let
+      { renderSuggestion
+      , input
+      , setInput
+      , suggestions
+      , onDismiss
+      , activeIndex
+      , updateActiveIndex
+      , placeholder
+
+      } = props
+    id ← React.useId
+    -- The previous suggestions so we have something to display while loading
+    prevSuggs /\ setPrevSuggs ← React.useState' []
+    inputHasFocus /\ setInputHasFocus ← React.useState' false
+    popupHasFocus /\ setPopupHasFocus ← React.useState' false
+    isScrolling /\ setIsScrolling ← React.useState' false
+    isAnimating /\ setIsAnimating ← React.useState' false
+    inputContainerRef ← React.useRef null
+    inputRef ← React.useRef null
+
+    let focusIsWithin = inputHasFocus || popupHasFocus
+
+    useEffect focusIsWithin do
+      unless focusIsWithin do
+        updateActiveIndex (const Nothing)
+      mempty
+
+    { focusWithinProps } ←
+      useFocusWithin
+        { onFocusWithin: handler_ (setPopupHasFocus true)
+        , onBlurWithin: handler_ (setPopupHasFocus false)
+        }
+
+    { focusProps } ←
+      useFocus
+        { onFocus: handler_ (setInputHasFocus true)
+        , onBlur: handler_ (setInputHasFocus false)
+        }
+
+    -- We store the result whenever we have successful suggestions
+    React.useEffect (RemoteData.isSuccess suggestions) do
+      case suggestions of
+        RemoteData.Success suggs → setPrevSuggs suggs
+        _ → mempty
+      mempty
+
+    let
+      focusInput ∷ Effect Unit
+      focusInput = do
+        maybeElem ← React.readRefMaybe inputRef
+        for_ (maybeElem >>= HTMLElement.fromNode) focus
+
+      blurCurrentItem ∷ Effect Unit
+      blurCurrentItem = do
+        maybeActive ← window >>= document >>= activeElement
+        for_ maybeActive \active → blur active
+
+    focusActiveElement id { isAnimating, isScrolling } blurCurrentItem
+      activeIndex
+    let
+      onSelected i = do
+        { inputValue, dismiss } ← props.onSelected i
+        when (props.input /= inputValue) do
+          props.setInput inputValue
+        when dismiss do
+          updateActiveIndex (const Nothing)
+          blurCurrentItem
+
+    -- Keyboard events
+    let
+      handleKeyDown =
+        mkHandleKeyDown
+          { activeIndex
+          , updateActiveIndex
+          , focusInput
+          , suggestions: suggestions # RemoteData.toMaybe # fromMaybe prevSuggs
+          , onSelected
+          , onDismiss
+          }
+    let
+      inputBox = fragment
+        [ inputElement
+        , popOver
+            { hide: blurCurrentItem
+            , placement: Placement Below Start
+            , placementRef: inputContainerRef
+            , dismissBehaviourʔ: Nothing
+            , onAnimationStateChange: setIsAnimating
+            -- Just
+            --     ( DismissOnClickOutsideElements
+            --         (NEA.cons' listRef [ inputContainerRef ])
+            --     )
+            , containerId: contextMenuLayerId
+            , childʔ:
+                if not focusIsWithin then Nothing
+                else Just $ R.div'
+                  </
+                    { onFocus: focusWithinProps.onFocus
+                    , onBlur: focusWithinProps.onBlur
+                    }
+                  /> [ resultsContainer ]
+            }
+        ]
+
+      inputElement = R.div'
+        </*
+          { css: plumageInputContainerStyle <>
+              if focusIsWithin then plumageInputContainerFocusWithinStyle
+              else mempty
+          , ref: inputContainerRef
+          }
+        />
+          [ props.beforeInput
+          , R.input'
+              </*>
+                { css: plumageInputStyle
+                , id
+                , ref: inputRef
+                , placeholder
+                , className: "plm-input"
+                , value: input
+                , onChange: handler targetValue (traverse_ setInput)
+                , onKeyUp:
+                    handler
+                      SE.key
+                      \e → e >>= parseKey # traverse_ handleKeyDown
+
+                , onFocus: focusProps.onFocus
+                , onBlur: focusProps.onBlur
+                }
+          ]
+
+      wrapSuggestion i suggestion _ =
+        R.div'
+          </*
+            { tabIndex: -1
+            , id: id <> "-suggestion-" <> show i
+            , css: F.focus (background gray._100 <> outlineNone)
+            , onMouseMove:
+                handler syntheticEvent \det → do
+                  let
+                    movementX = (unsafeCoerce det).movementX # uorToMaybe #
+                      fromMaybe 0.0
+                  let
+                    movementY = (unsafeCoerce det).movementY # uorToMaybe #
+                      fromMaybe 0.0
+                  unless
+                    ( (movementX == zero && movementY == zero) || activeIndex ==
+                        Just i
+                    )
+                    do
+                      updateActiveIndex (const (Just i))
+            , onKeyDown: handler preventDefault mempty
+            -- ^ disables scrolling with arrow keys
+            , onKeyUp:
+                handler SE.key
+                  (traverse_ handleKeyDown <<< (parseKey =<< _))
+            , onClick: capture_ do
+                Console.log "On click"
+                onSelected suggestion
+            }
+          /> [ renderSuggestion suggestion ]
+
+      resultsContainer =
+        R.div'
+          </*
+            { css: resultsContainerStyle
+            , style: R.css { overscrollBehavior: "auto" }
+            }
+          />
+            [ suggestionElements
+            , H.div_ (pX 8)
+                [ loadingBar
+                    { numberOfLights: 10
+                    , remoteData: suggestions
+                    }
+                ]
+            ]
+
+      suggestionElements =
+        virtuosoImpl </>
+          { overscan: args.overscan
+          , scrollSeekConfiguration: args.scrollSeekConfigurationʔ # maybeToUor
+          , components: case args.scrollSeekPlaceholderʔ of
+              Nothing → { "Item": itemCompo, "List": listCompo }
+              Just scrollSeekPlaceholder → unsafeCoerce
+                { "Item": itemCompo
+                , "List": listCompo
+                , "ScrollSeekPlaceholder": scrollSeekPlaceholder
+                }
+          , isScrolling: mkEffectFn1 setIsScrolling
+          , style: R.css
+              { height: 230, width: "100%" }
+          , data: case suggestions of
+              RemoteData.NotAsked → prevSuggs
+              RemoteData.Loading → prevSuggs
+              RemoteData.Failure _ → prevSuggs
+              RemoteData.Success suggs → suggs
+          , itemContent: mkFn3 wrapSuggestion
+          }
+
+    useEffect input do
+      -- [TODO] This could be more intelligently setting the index
+      updateActiveIndex (const Nothing)
+      mempty
+
+    pure inputBox
+
+  where
+  focusActiveElement
+    id
+    { isAnimating, isScrolling }
+    blurCurrentItem
+    activeIndex =
+    useEffect activeIndex do
+      unless (isAnimating || isScrolling) do
+        -- scroll into view
+        case activeIndex of
+          Nothing → blurCurrentItem
+          Just i → do
+            suggʔ ← window >>= document >>=
+              ( HTMLDocument.toDocument >>> toNonElementParentNode >>>
+                  getElementById (id <> "-suggestion-" <> show i)
+              )
+            for_ (suggʔ >>= HTMLElement.fromElement) focus
+      mempty
+
+  resultsContainerStyle =
+    textCol TW.gray._700
+      <> background' (var ("--plm-popupBackground-colour"))
+      <> pT 0
+      <> pB 6
+      <> pX 0
+      <> flexCol
+      <> justifyEnd
+      <> widthFull
+      <> itemsStart
+      <> gap 3
+      <> roundedLg
+      <> border 1
+      <> borderTop 0
+      <> textXs
+      <> shadowLg
+      <> borderCol TW.gray._200
+
+resultContainerStyle ∷ E.Style
+resultContainerStyle =
+  pY 2
+    <> cursorPointer
+
+parseKey ∷ String → Maybe KeyCode
+parseKey = case _ of
+  "ArrowUp" → Just Key.Up
+  "ArrowDown" → Just Key.Down
+  "Backspace" → Just Key.Backspace
+  "Enter" → Just Key.Return
+  _ → Nothing
+
+mkHandleKeyDown ∷
+  ∀ a.
+  { activeIndex ∷ Maybe Int
+  , focusInput ∷ Effect Unit
+  , suggestions ∷ (Array a)
+  , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
+  , onSelected ∷ a → Effect Unit
+  , onDismiss ∷ Effect Unit
+  } →
+  KeyCode →
+  Effect Unit
+mkHandleKeyDown
+  { activeIndex
+  , suggestions
+  , updateActiveIndex
+  , focusInput
+  , onSelected
+  , onDismiss
+  }
+  key = do
+  let maxIndex = Array.length suggestions - 1
+  case key of
+    Key.Up → do
+      when (activeIndex == Just 0) focusInput
+      updateActiveIndex case _ of
+        Just 0 → Nothing
+        Nothing → Just maxIndex
+        Just i → Just (i - 1)
+    Key.Down → do
+      when (activeIndex == Just maxIndex) focusInput
+      updateActiveIndex case _ of
+        Just i | i == maxIndex → Nothing
+        Nothing → Just 0
+        Just i → Just (i + 1)
+    -- [TODO] End and Home keys
+    Key.Return → do
+      for_ activeIndex \i → do
+        for_ (suggestions !! i) onSelected
+    Key.Backspace → do
+      focusInput
+    Key.Escape → do
+      onDismiss
+    _ → mempty
+
+mkForwardRefComponent ∷
+  ∀ ref props.
+  Lacks "ref" props ⇒
+  String →
+  ReactComponent { ref ∷ React.Ref ref | props } →
+  Effect (ReactComponent { | props })
+mkForwardRefComponent name component = mkForwardRefComponentEffect name
+  \(props ∷ { | props }) ref → React.do
+    pure $ React.element component (Record.insert (Proxy ∷ _ "ref") ref props)
+
+mkForwardRefEmotionComponent ∷
+  ∀ ref props.
+  Lacks "ref" props ⇒
+  String →
+  ReactComponent { className ∷ String, ref ∷ React.Ref ref | props } →
+  Effect (ReactComponent { className ∷ String, css ∷ E.Style | props })
+mkForwardRefEmotionComponent name component =
+  mkForwardRefComponentEffect name
+    \(props ∷ { className ∷ String, css ∷ E.Style | props }) ref → React.do
+      pure $ E.element component
+        ( Record.insert (Proxy ∷ _ "ref") ref props
+        )
+
+mkForwardRefComponentWithStyle ∷
+  ∀ ref props.
+  Lacks "ref" props ⇒
+  Lacks "className" props ⇒
+  Union props
+    (className ∷ String, css ∷ E.Style)
+    (className ∷ String, css ∷ E.Style | props) ⇒
+  Nub (className ∷ String, css ∷ E.Style | props)
+    (className ∷ String, css ∷ E.Style | props) ⇒
+  String →
+  E.Style →
+  ReactComponent { className ∷ String, ref ∷ React.Ref ref | props } →
+  Effect (ReactComponent { | props })
+mkForwardRefComponentWithStyle name css component = mkForwardRefComponentEffect
+  name
+  \(props ∷ { | props }) ref → React.do
+    pure $ E.element component
+      ( Record.insert (Proxy ∷ _ "ref") ref
+          ( (props `Record.disjointUnion` { className: name, css }) ∷
+              { className ∷ String, css ∷ E.Style | props }
+          )
+      )
