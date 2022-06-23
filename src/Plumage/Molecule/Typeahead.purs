@@ -10,7 +10,7 @@ import Effect.Aff (Aff, attempt, delay)
 import Effect.Class.Console as Console
 import Effect.Exception (Error)
 import Effect.Uncurried (mkEffectFn1)
-import Fahrtwind (background, background', borderTop, gray, itemsStart, justifyEnd, outlineNone, roundedLg, shadowLg, textXs, widthFull)
+import Fahrtwind (background, background', borderTop, gray, itemsStart, justifyEnd, outlineNone, overflowXHidden, roundedLg, shadowLg, textXs, widthFull)
 import Fahrtwind as F
 import Fahrtwind.Style (pB, pT, pX, pY)
 import Fahrtwind.Style.Border (border, borderCol)
@@ -63,6 +63,7 @@ type Args a =
   , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
   , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   , overscan ∷ Overscan
+  , containerStyle ∷ E.Style
   }
 
 type Props a =
@@ -91,6 +92,7 @@ mkDefaultArgs
   , scrollSeekPlaceholderʔ: Nothing
   , scrollSeekConfigurationʔ: Nothing
   , overscan: { main: 100, reverse: 100 }
+  , containerStyle: resultsContainerStyle
   }
 
 mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
@@ -100,6 +102,7 @@ mkTypeahead args = do
     , overscan: args.overscan
     , scrollSeekPlaceholderʔ: args.scrollSeekPlaceholderʔ
     , scrollSeekConfigurationʔ: args.scrollSeekConfigurationʔ
+    , containerStyle: args.containerStyle
     }
   React.reactComponent "Typeahead" \props → React.do
     input /\ setInput ← React.useState' ""
@@ -148,6 +151,7 @@ mkTypeaheadView ∷
   , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
   , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   , overscan ∷ Overscan
+  , containerStyle ∷ E.Style
   } →
   Effect (ReactComponent (ViewProps a))
 mkTypeaheadView
@@ -159,16 +163,13 @@ mkTypeaheadView
     resultContainerStyle
     M.li
   listCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadList"
-    ( E.css
-        { "& > *": E.nested $ E.css { scrollBehavior: E.str "smooth" }
-        } <>
-        scrollBar
-          { background: F.green._200
-          , col: F.green._400
-          , width: 8
-          , borderRadius: 2
-          , borderWidth: 4
-          }
+    ( scrollBar
+        { background: F.green._200
+        , col: F.green._400
+        , width: 8
+        , borderRadius: 2
+        , borderWidth: 4
+        } <> F.width 800
     )
     R.ul'
 
@@ -262,10 +263,6 @@ mkTypeaheadView
             , placementRef: inputContainerRef
             , dismissBehaviourʔ: Nothing
             , onAnimationStateChange: setIsAnimating
-            -- Just
-            --     ( DismissOnClickOutsideElements
-            --         (NEA.cons' listRef [ inputContainerRef ])
-            --     )
             , containerId: contextMenuLayerId
             , childʔ:
                 if not focusIsWithin then Nothing
@@ -340,7 +337,7 @@ mkTypeaheadView
       resultsContainer =
         R.div'
           </*
-            { css: resultsContainerStyle
+            { css: args.containerStyle
             , style: R.css { overscrollBehavior: "auto" }
             }
           />
@@ -401,28 +398,25 @@ mkTypeaheadView
             for_ (suggʔ >>= HTMLElement.fromElement) focus
       mempty
 
-  resultsContainerStyle =
-    textCol TW.gray._700
-      <> background' (var ("--plm-popupBackground-colour"))
-      <> pT 0
-      <> pB 6
-      <> pX 0
-      <> flexCol
-      <> justifyEnd
-      <> widthFull
-      <> itemsStart
-      <> gap 3
-      <> roundedLg
-      <> border 1
-      <> borderTop 0
-      <> textXs
-      <> shadowLg
-      <> borderCol TW.gray._200
+resultsContainerStyle =
+  textCol TW.gray._700
+    <> background' (var ("--plm-popupBackground-colour"))
+    <> pT 0
+    <> pB 6
+    <> pX 0
+    <> flexCol
+    <> justifyEnd
+    <> itemsStart
+    <> gap 3
+    <> roundedLg
+    <> border 1
+    <> borderTop 0
+    <> textXs
+    <> shadowLg
+    <> borderCol TW.gray._200
 
 resultContainerStyle ∷ E.Style
-resultContainerStyle =
-  pY 2
-    <> cursorPointer
+resultContainerStyle = pY 2 <> cursorPointer
 
 parseKey ∷ String → Maybe KeyCode
 parseKey = case _ of
