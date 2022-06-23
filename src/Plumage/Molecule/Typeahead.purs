@@ -6,12 +6,11 @@ import Data.Array ((!!))
 import Data.Array as Array
 import Data.Function.Uncurried (mkFn3)
 import Data.Time.Duration (Milliseconds(..))
-import Debug (spy)
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Class.Console as Console
 import Effect.Exception (Error)
 import Effect.Uncurried (mkEffectFn1)
-import Fahrtwind (background, background', borderTop, gray, itemsStart, justifyEnd, outlineNone, overflowHidden, pink, roundedLg, shadowLg, textXs, widthFull)
+import Fahrtwind (background, background', borderTop, gray, itemsStart, justifyEnd, outlineNone, roundedLg, shadowLg, textXs, widthFull)
 import Fahrtwind as F
 import Fahrtwind.Style (pB, pT, pX, pY)
 import Fahrtwind.Style.Border (border, borderCol)
@@ -175,11 +174,8 @@ mkTypeaheadView
     isAnimating /\ setIsAnimating ← React.useState' false
     inputContainerRef ← React.useRef null
     inputRef ← React.useRef null
-    virtuosoHandleRef ← React.useRef null
 
     let focusIsWithin = inputHasFocus || popupHasFocus
-
-    let _ = spy "focus" { focusIsWithin, inputHasFocus, popupHasFocus }
 
     useEffect focusIsWithin do
       unless focusIsWithin do
@@ -217,7 +213,6 @@ mkTypeaheadView
         for_ maybeActive \active → blur active
 
     focusActiveElement id { isAnimating, isScrolling } blurCurrentItem
-      virtuosoHandleRef
       activeIndex
     let
       onSelected i = do
@@ -344,7 +339,6 @@ mkTypeaheadView
           { overscan: { main: 100, reverse: 100 }
           , components: { "Item": itemCompo, "List": listCompo }
           , isScrolling: mkEffectFn1 setIsScrolling
-          , ref: virtuosoHandleRef
           , style: R.css
               { height: 230, width: "100%" }
           , data: case suggestions of
@@ -367,22 +361,19 @@ mkTypeaheadView
     id
     { isAnimating, isScrolling }
     blurCurrentItem
-    virtuosoHandleRef
     activeIndex =
     useEffect activeIndex do
-      if isAnimating || isScrolling then mempty
-      else do
+      unless (isAnimating || isScrolling) do
         -- scroll into view
-        React.readRefMaybe virtuosoHandleRef >>= traverse_ \virtuosoHandle → do
-          case activeIndex of
-            Nothing → blurCurrentItem
-            Just i → do
-              suggʔ ← window >>= document >>=
-                ( HTMLDocument.toDocument >>> toNonElementParentNode >>>
-                    getElementById (id <> "-suggestion-" <> show i)
-                )
-              for_ (suggʔ >>= HTMLElement.fromElement) focus
-        mempty
+        case activeIndex of
+          Nothing → blurCurrentItem
+          Just i → do
+            suggʔ ← window >>= document >>=
+              ( HTMLDocument.toDocument >>> toNonElementParentNode >>>
+                  getElementById (id <> "-suggestion-" <> show i)
+              )
+            for_ (suggʔ >>= HTMLElement.fromElement) focus
+      mempty
 
   resultsContainerStyle =
     textCol TW.gray._700
