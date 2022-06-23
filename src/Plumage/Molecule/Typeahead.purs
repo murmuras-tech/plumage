@@ -336,7 +336,7 @@ mkTypeaheadView
 
       suggestionElements =
         virtuosoImpl </>
-          { overscan: { main: 100, reverse: 100 }
+          { overscan: { main: 1000, reverse: 1000 }
           , components: { "Item": itemCompo, "List": listCompo }
           , isScrolling: mkEffectFn1 setIsScrolling
           , style: R.css
