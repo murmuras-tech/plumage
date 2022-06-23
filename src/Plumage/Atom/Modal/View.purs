@@ -2,7 +2,7 @@ module Plumage.Atom.Modal.View where
 
 import Yoga.Prelude.View
 
-import Fahrtwind (acceptClicks, ignoreClicks)
+import Fahrtwind (acceptClicks)
 import Fahrtwind.Style.Color.Background (background)
 import Fahrtwind.Style.Color.Tailwind as TW
 import Fahrtwind.Style.Color.Util (withAlpha)

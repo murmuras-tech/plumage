@@ -40,7 +40,7 @@ import React.Virtuoso (virtuosoImpl)
 import Record as Record
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
-import Untagged.Union (uorToMaybe)
+import Untagged.Union (maybeToUor, uorToMaybe)
 import Web.DOM.Document (toNonElementParentNode)
 import Web.DOM.NonElementParentNode (getElementById)
 import Web.HTML (window)
@@ -53,12 +53,15 @@ import Yoga.Block.Hook.Key as Key
 
 type Overscan = { main ∷ Int, reverse ∷ Int }
 type ScrollSeekPlaceholder = ReactComponent { height ∷ Number, index ∷ Int }
+type ScrollSeekConfiguration =
+  { enter ∷ Number → Boolean, exit ∷ Number → Boolean }
 
 type Args a =
   { debounce ∷ Milliseconds
   , suggestionToText ∷ a → String
   , contextMenuLayerId ∷ String
   , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
+  , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   , overscan ∷ Overscan
   }
 
@@ -86,6 +89,7 @@ mkDefaultArgs
   , suggestionToText
   , contextMenuLayerId
   , scrollSeekPlaceholderʔ: Nothing
+  , scrollSeekConfigurationʔ: Nothing
   , overscan: { main: 100, reverse: 100 }
   }
 
@@ -95,6 +99,7 @@ mkTypeahead args = do
     { contextMenuLayerId: args.contextMenuLayerId
     , overscan: args.overscan
     , scrollSeekPlaceholderʔ: args.scrollSeekPlaceholderʔ
+    , scrollSeekConfigurationʔ: args.scrollSeekConfigurationʔ
     }
   React.reactComponent "Typeahead" \props → React.do
     input /\ setInput ← React.useState' ""
@@ -141,6 +146,7 @@ mkTypeaheadView ∷
   ∀ a.
   { contextMenuLayerId ∷ String
   , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
+  , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   , overscan ∷ Overscan
   } →
   Effect (ReactComponent (ViewProps a))
@@ -350,7 +356,7 @@ mkTypeaheadView
       suggestionElements =
         virtuosoImpl </>
           { overscan: args.overscan
-
+          , scrollSeekConfiguration: args.scrollSeekConfigurationʔ # maybeToUor
           , components: case args.scrollSeekPlaceholderʔ of
               Nothing → { "Item": itemCompo, "List": listCompo }
               Just scrollSeekPlaceholder → unsafeCoerce
