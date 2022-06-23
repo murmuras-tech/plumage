@@ -65,7 +65,6 @@ typeaheadArgs ∷ Typeahead.Args String
 typeaheadArgs = Typeahead.mkDefaultArgs
   { suggestionToText: identity
   , contextMenuLayerId: "cm"
-  , clickAwayId: "clickaway"
   }
 
 words ∷ Array String

@@ -76,7 +76,6 @@ mkDefaultArgs ∷
   ∀ a.
   { suggestionToText ∷ a → String
   , contextMenuLayerId ∷ String
-  , clickAwayId ∷ String
   } →
   Args a
 mkDefaultArgs
