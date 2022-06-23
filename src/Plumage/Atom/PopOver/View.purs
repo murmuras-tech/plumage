@@ -38,7 +38,7 @@ type PopOverViewProps =
   , placementRef ∷ NodeRef
   , childʔ ∷ Maybe JSX
   , hide ∷ Effect Unit
-  , isAnimating ∷ Boolean → Effect Unit
+  , onAnimationStateChange ∷ Boolean → Effect Unit
   }
 
 mkPopOverView ∷ React.Component PopOverViewProps
@@ -112,7 +112,7 @@ mkPopOverView = do
               { type: "spring", bounce: 0.2, duration: 0.15 }
           }
       onAnimationComplete = M.onAnimationComplete \fgn → do
-        props.isAnimating false
+        props.onAnimationStateChange false
         if (reallyUnsafeRefEq fgn exit) then
           setVisiblePlacement Nothing
         else if (reallyUnsafeRefEq fgn animate) then do
@@ -120,7 +120,7 @@ mkPopOverView = do
         else mempty
 
       onAnimationStart = M.onAnimationStart do
-        props.isAnimating true
+        props.onAnimationStateChange true
         setAnimationDone false
 
       getBBWidthAndHeight = ado

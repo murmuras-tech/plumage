@@ -247,7 +247,7 @@ mkTypeaheadView
             , placement: Placement Below Start
             , placementRef: inputContainerRef
             , dismissBehaviourʔ: Nothing
-            , isAnimating: setIsAnimating
+            , onAnimationStateChange: setIsAnimating
             -- Just
             --     ( DismissOnClickOutsideElements
             --         (NEA.cons' listRef [ inputContainerRef ])
