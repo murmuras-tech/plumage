@@ -6,11 +6,12 @@ import Data.Array ((!!))
 import Data.Array as Array
 import Data.Function.Uncurried (mkFn3)
 import Data.Time.Duration (Milliseconds(..))
+import Debug (spy)
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Class.Console as Console
 import Effect.Exception (Error)
 import Effect.Uncurried (mkEffectFn1)
-import Fahrtwind (background, background', borderTop, gray, itemsStart, justifyEnd, outlineNone, overflowXHidden, roundedLg, shadowLg, textXs, widthFull)
+import Fahrtwind (background, background', borderTop, focusWithin, gray, itemsStart, justifyEnd, outlineNone, overflowXHidden, roundedLg, shadowLg, textXs, widthFull)
 import Fahrtwind as F
 import Fahrtwind.Style (pB, pT, pX, pY)
 import Fahrtwind.Style.Border (border, borderCol)
@@ -40,6 +41,7 @@ import React.Virtuoso (virtuosoImpl)
 import Record as Record
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
+import Unsafe.Reference (UnsafeRefEq)
 import Untagged.Union (maybeToUor, uorToMaybe)
 import Web.DOM.Document (toNonElementParentNode)
 import Web.DOM.NonElementParentNode (getElementById)
@@ -95,7 +97,7 @@ mkDefaultArgs
   , containerStyle: resultsContainerStyle
   }
 
-mkTypeahead ∷ ∀ a. Args a → Effect (ReactComponent (Props a))
+mkTypeahead ∷ ∀ a. Eq a ⇒ Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
   typeaheadView ← mkTypeaheadView
     { contextMenuLayerId: args.contextMenuLayerId
@@ -147,6 +149,7 @@ type ViewProps a =
 
 mkTypeaheadView ∷
   ∀ a.
+  Eq a ⇒
   { contextMenuLayerId ∷ String
   , scrollSeekPlaceholderʔ ∷ Maybe ScrollSeekPlaceholder
   , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
@@ -196,11 +199,7 @@ mkTypeaheadView
     inputRef ← React.useRef null
 
     let focusIsWithin = inputHasFocus || popupHasFocus
-
-    useEffect focusIsWithin do
-      unless focusIsWithin do
-        updateActiveIndex (const Nothing)
-      mempty
+    let _ = spy "input and popup" { inputHasFocus, popupHasFocus }
 
     { focusWithinProps } ←
       useFocusWithin
@@ -217,7 +216,7 @@ mkTypeaheadView
     -- We store the result whenever we have successful suggestions
     React.useEffect (RemoteData.isSuccess suggestions) do
       case suggestions of
-        RemoteData.Success suggs → setPrevSuggs suggs
+        RemoteData.Success suggs | suggs /= prevSuggs → setPrevSuggs suggs
         _ → mempty
       mempty
 
@@ -265,13 +264,13 @@ mkTypeaheadView
             , onAnimationStateChange: setIsAnimating
             , containerId: contextMenuLayerId
             , childʔ:
-                if not focusIsWithin then Nothing
-                else Just $ R.div'
+                if focusIsWithin then Just $ R.div'
                   </
                     { onFocus: focusWithinProps.onFocus
                     , onBlur: focusWithinProps.onBlur
                     }
                   /> [ resultsContainer ]
+                else Nothing
             }
         ]
 
@@ -310,26 +309,21 @@ mkTypeaheadView
             , id: id <> "-suggestion-" <> show i
             , css: F.focus (background gray._100 <> outlineNone)
             , onMouseMove:
-                handler syntheticEvent \det → do
+                handler syntheticEvent \det → unless (activeIndex == Just i) do
                   let
                     movementX = (unsafeCoerce det).movementX # uorToMaybe #
                       fromMaybe 0.0
                   let
                     movementY = (unsafeCoerce det).movementY # uorToMaybe #
                       fromMaybe 0.0
-                  unless
-                    ( (movementX == zero && movementY == zero) || activeIndex ==
-                        Just i
-                    )
-                    do
-                      updateActiveIndex (const (Just i))
+                  unless ((movementX == zero && movementY == zero))
+                    do updateActiveIndex (const (Just i))
             , onKeyDown: handler preventDefault mempty
             -- ^ disables scrolling with arrow keys
             , onKeyUp:
                 handler SE.key
                   (traverse_ handleKeyDown <<< (parseKey =<< _))
             , onClick: capture_ do
-                Console.log "On click"
                 onSelected suggestion
             }
           /> [ renderSuggestion suggestion ]
@@ -370,11 +364,13 @@ mkTypeaheadView
               RemoteData.Failure _ → prevSuggs
               RemoteData.Success suggs → suggs
           , itemContent: mkFn3 wrapSuggestion
+
+          , onMouseOut: handler_ (when focusIsWithin focusInput)
           }
 
-    useEffect input do
-      -- [TODO] This could be more intelligently setting the index
-      updateActiveIndex (const Nothing)
+    useEffect focusIsWithin do
+      unless focusIsWithin do
+        updateActiveIndex (const Nothing)
       mempty
 
     pure inputBox
