@@ -49,6 +49,7 @@ import Web.DOM.NonElementParentNode (getElementById)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (activeElement)
 import Web.HTML.HTMLDocument as HTMLDocument
+import Web.HTML.HTMLElement (spellcheck)
 import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (document)
 import Yoga.Block.Hook.Key (KeyCode)
@@ -200,7 +201,6 @@ mkTypeaheadView
     inputRef ← React.useRef null
 
     let focusIsWithin = inputHasFocus || popupHasFocus
-    let _ = spy "input and popup" { inputHasFocus, popupHasFocus }
 
     { focusWithinProps } ←
       useFocusWithin
@@ -289,6 +289,8 @@ mkTypeaheadView
                 { css: plumageInputStyle
                 , id
                 , ref: inputRef
+                , spellCheck: false
+                , autoComplete: "off"
                 , placeholder
                 , className: "plm-input"
                 , value: input

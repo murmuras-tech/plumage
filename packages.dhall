@@ -600,7 +600,7 @@ in  upstream
     }
   with ry-blocks =
     { repo = "https://github.com/rowtype-yoga/ry-blocks.git"
-    , version = "85c9ecffa183f1e977248785ed9362c12b582d1d"
+    , version = "6ea837a554666463c1e073eca9912de6160e2768"
     , dependencies =
       [ "aff"
       , "aff-promise"
