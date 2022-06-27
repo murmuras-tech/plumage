@@ -173,7 +173,7 @@ mkTypeaheadView
         , width: 8
         , borderRadius: 2
         , borderWidth: 4
-        } <> F.width 800
+        }
     )
     R.ul'
 
