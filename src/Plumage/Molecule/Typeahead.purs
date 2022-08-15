@@ -115,7 +115,9 @@ mkTypeahead args = do
   React.reactComponent "Typeahead" \(props ∷ Props a) → React.do
     input /\ setInput ← React.useState' ""
     suggestions /\ setSuggestions ← React.useState' RemoteData.NotAsked
-    activeIndex /\ updateActiveIndex ← React.useState Nothing
+    { activeIndex, updatedByKeyboard } /\ updateActiveIndex ← React.useState
+      { activeIndex: Nothing, updatedByKeyboard: false }
+
     useAff input do
       setSuggestions RemoteData.Loading # liftEffect
       delay args.debounce
@@ -130,6 +132,7 @@ mkTypeahead args = do
         , setInput
         , suggestions
         , activeIndex
+        , updatedByKeyboard
         , updateActiveIndex
         , onSelected: props.onSelected
         , onRemoved: props.onRemoved
@@ -143,12 +146,21 @@ mkTypeahead args = do
 
 type ViewProps a =
   { activeIndex ∷ Maybe Int
+  , updatedByKeyboard ∷ Boolean
   , input ∷ String
   , isLoading ∷ Boolean
   , setInput ∷ String → Effect Unit
   , suggestions ∷ RemoteData Error (Array a)
   , renderSuggestion ∷ a → JSX
-  , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
+  , updateActiveIndex ∷
+      ( { activeIndex ∷ Maybe Int
+        , updatedByKeyboard ∷ Boolean
+        } →
+        { activeIndex ∷ Maybe Int
+        , updatedByKeyboard ∷ Boolean
+        }
+      ) →
+      Effect Unit
   , onSelected ∷
       a → Effect { overrideInputValue ∷ Maybe String, dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
@@ -187,6 +199,7 @@ mkTypeaheadView
         , suggestions
         , onDismiss
         , activeIndex
+        , updatedByKeyboard
         , updateActiveIndex
         , placeholder
         , isLoading
@@ -240,7 +253,8 @@ mkTypeaheadView
           maybeActive ← window >>= document >>= activeElement
           for_ maybeActive \active → blur active
 
-      focusActiveElement id { isAnimating, isScrolling } blurCurrentItem
+      focusActiveElement id { isAnimating, isScrolling, updatedByKeyboard }
+        blurCurrentItem
         activeIndex
       let
         onSelected i = do
@@ -248,15 +262,19 @@ mkTypeaheadView
           when (Just props.input /= overrideInputValue) do
             for_ overrideInputValue props.setInput
           when dismiss do
-            updateActiveIndex (const Nothing)
+            updateActiveIndex $ const
+              { activeIndex: Nothing
+              , updatedByKeyboard: false
+              }
             blurCurrentItem
 
       -- Keyboard events
       let
-        handleKeyDown =
-          mkHandleKeyDown
+        handleKeyUp =
+          mkHandleKeyUp
             { activeIndex
-            , updateActiveIndex
+            , updateActiveIndex: \update → updateActiveIndex \old →
+                { activeIndex: old.activeIndex, updatedByKeyboard: true }
             , focusInput
             , suggestions: suggestions # RemoteData.toMaybe # fromMaybe
                 prevSuggs
@@ -294,11 +312,12 @@ mkTypeaheadView
                 , placeholder
                 , value: input
                 , onChange: handler targetValue (traverse_ setInput)
-                , onMouseEnter: handler_ (when focusIsWithin focusInput)
+                , onMouseEnter: handler_
+                    (when focusIsWithin focusInput)
                 , onKeyUp:
                     handler
                       SE.key
-                      \e → e >>= parseKey # traverse_ handleKeyDown
+                      \e → e >>= parseKey # traverse_ handleKeyUp
 
                 , onFocus: focusProps.onFocus
                 , onBlur: focusProps.onBlur
@@ -331,12 +350,18 @@ mkTypeaheadView
                         movementY = (unsafeCoerce det).movementY # uorToMaybe #
                           fromMaybe 0.0
                       unless ((movementX == zero && movementY == zero))
-                        do updateActiveIndex (const (Just i))
+                        do
+                          updateActiveIndex
+                            ( const
+                                { activeIndex: Just i
+                                , updatedByKeyboard: false
+                                }
+                            )
               , onKeyDown: handler preventDefault mempty
               -- ^ disables scrolling with arrow keys
               , onKeyUp:
                   handler SE.key
-                    (traverse_ handleKeyDown <<< (parseKey =<< _))
+                    (traverse_ handleKeyUp <<< (parseKey =<< _))
               , onClick: capture_ do
                   onSelected suggestion
               }
@@ -387,7 +412,8 @@ mkTypeaheadView
 
       useEffect focusIsWithin do
         unless focusIsWithin do
-          updateActiveIndex (const Nothing)
+          updateActiveIndex
+            (const { activeIndex: Nothing, updatedByKeyboard: false })
         mempty
 
       pure inputBox
@@ -395,12 +421,11 @@ mkTypeaheadView
   where
   focusActiveElement
     id
-    { isAnimating, isScrolling }
+    { isAnimating, isScrolling, updatedByKeyboard }
     blurCurrentItem
     activeIndex =
     useEffect activeIndex do
       unless (isAnimating || isScrolling) do
-        -- scroll into view
         case activeIndex of
           Nothing → blurCurrentItem
           Just i → do
@@ -408,7 +433,8 @@ mkTypeaheadView
               ( HTMLDocument.toDocument >>> toNonElementParentNode >>>
                   getElementById (id <> "-suggestion-" <> show i)
               )
-            for_ (suggʔ >>= HTMLElement.fromElement) focusPreventScroll
+            for_ (suggʔ >>= HTMLElement.fromElement)
+              (if updatedByKeyboard then focus else focusPreventScroll)
       mempty
 
 -- https://caniuse.com/mdn-api_svgelement_focus_options_preventscroll_parameter
@@ -442,18 +468,20 @@ parseKey = case _ of
   "Enter" → Just Key.Return
   _ → Nothing
 
-mkHandleKeyDown ∷
+mkHandleKeyUp ∷
   ∀ a.
   { activeIndex ∷ Maybe Int
   , focusInput ∷ Effect Unit
   , suggestions ∷ (Array a)
-  , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
+  , updateActiveIndex ∷
+      (Maybe Int → Maybe Int) →
+      Effect Unit
   , onSelected ∷ a → Effect Unit
   , onDismiss ∷ Effect Unit
   } →
   KeyCode →
   Effect Unit
-mkHandleKeyDown
+mkHandleKeyUp
   { activeIndex
   , suggestions
   , updateActiveIndex
