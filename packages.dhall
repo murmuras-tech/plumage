@@ -600,7 +600,7 @@ in  upstream
     }
   with ry-blocks =
     { repo = "https://github.com/rowtype-yoga/ry-blocks.git"
-    , version = "6ea837a554666463c1e073eca9912de6160e2768"
+    , version = "cc8d6be5cdc518c82bd30822b6be0ca292c52ec7"
     , dependencies =
       [ "aff"
       , "aff-promise"
@@ -722,7 +722,7 @@ in  upstream
       , "typelevel-prelude"
       , "unsafe-coerce"
       ]
-    , version = "main"
+    , version = "654be2533b0ea950511f26e29ba9ab574f7abc03"
     }
   with react-virtuoso =
     { dependencies =

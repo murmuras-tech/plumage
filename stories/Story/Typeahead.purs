@@ -6,16 +6,19 @@ import Data.Array as Array
 import Data.Either (Either(..))
 import Data.String (Pattern(..))
 import Data.String as String
+import Data.String.NonEmpty (nes)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Aff (delay)
 import Effect.Class (liftEffect)
 import Effect.Class.Console as Console
 import Effect.Random (randomRange)
-import Fahrtwind (background, globalStyles, gray, height', widthFull)
+import Fahrtwind (background, globalStyles, gray, height', textCol', widthAndHeight, widthFull)
 import Fahrtwind as F
-import Plumage.Molecule.Typeahead (mkTypeahead, resultContainerStyle, resultsContainerStyle)
+import Fahrtwind.Icon.Heroicons as Heroicon
+import Plumage.Molecule.Typeahead (inputProps, mkTypeahead, resultContainerStyle, resultsContainerStyle)
 import Plumage.Molecule.Typeahead as Typeahead
 import Plumage.Util.HTML as H
 import React.Basic (JSX, fragment)
@@ -23,8 +26,11 @@ import React.Basic.DOM as R
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 import Story.Container (inContainer)
+import Type.Prelude (Proxy(..))
 import Yoga ((</>))
 import Yoga.Block as Block
+import Yoga.Block.Container.Style (col)
+import Yoga.Block.Icon.SVG.Spinner (spinner)
 
 default ∷ { title ∷ String }
 default = { title: "Molecule/Typeahead" }
@@ -40,7 +46,7 @@ myTypeahead = do
   React.component "MyTypeahead" \_ → React.do
     selection /\ setSelection ← React.useState []
     pure $ inContainer $ H.div_
-      (height' (E.px 5000) <> widthFull <> background gray._200)
+      (height' (E.px 5000) <> widthFull)
       [ typeaheadView </>
           { loadSuggestions: \s → do
               ms ← randomRange 200.0 1500.0 # liftEffect
@@ -52,11 +58,14 @@ myTypeahead = do
 
           , renderSuggestion: R.text
           , onSelected: \s → setSelection (Array.cons s) *> pure
-              { inputValue: s, dismiss: true }
+              { overrideInputValue: Nothing, dismiss: true }
           , onDismiss: Console.log "dismissed"
           , onRemoved: \s → setSelection (Array.delete s)
           , placeholder: "Search"
-          , beforeInput: R.text "hoho"
+          , inputProps: inputProps
+              { label: nes (Proxy ∷ _ "Erwin")
+              -- , trailing: H.div_ (widthAndHeight 16) [ Heroicon.adjustments ]
+              }
           }
       , Block.cluster { justify: "flex-end", space: "8px" }
           (R.text <$> selection)

@@ -6,35 +6,30 @@ import Data.Array ((!!))
 import Data.Array as Array
 import Data.Function.Uncurried (mkFn3)
 import Data.Time.Duration (Milliseconds(..))
-import Debug (spy)
 import Effect.Aff (Aff, attempt, delay)
-import Effect.Class.Console as Console
 import Effect.Exception (Error)
 import Effect.Uncurried (mkEffectFn1)
-import Fahrtwind (background, background', borderTop, focusWithin, gray, itemsStart, justifyEnd, outlineNone, overflowXHidden, roundedLg, shadowLg, textXs, widthFull)
+import Effect.Unsafe (unsafePerformEffect)
+import Fahrtwind (background', itemsStart, justifyEnd, mX, minWidth, outlineNone, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthAndHeight)
 import Fahrtwind as F
-import Fahrtwind.Style (pB, pT, pX, pY)
-import Fahrtwind.Style.Border (border, borderCol)
+import Fahrtwind.Style (pT, pX, pY)
+import Fahrtwind.Style.Border (borderCol)
 import Fahrtwind.Style.Color.Tailwind as TW
-import Fahrtwind.Style.Color.Text (textCol)
 import Fahrtwind.Style.Cursor (cursorPointer)
 import Fahrtwind.Style.Display.Flex (flexCol, gap)
-import Fahrtwind.Style.ScollBar (scrollBar)
+import Fahrtwind.Style.ScollBar (scrollBar')
 import Framer.Motion as M
-import MotionValue (isAnimating)
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
-import Plumage.Atom.InfiniteLoadingBar (mkKittLoadingBar)
-import Plumage.Atom.Input.Input.Style (plumageInputContainerFocusWithinStyle, plumageInputContainerStyle, plumageInputStyle)
 import Plumage.Atom.PopOver.Types (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..))
 import Plumage.Atom.PopOver.View (mkPopOverView)
 import Plumage.Util.HTML as H
 import Prim.Row (class Lacks, class Nub)
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
+import React.Aria.Utils (mergeProps)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events (capture_)
 import React.Basic.DOM.Events as SE
-import React.Basic.Emotion (var)
 import React.Basic.Emotion as E
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
@@ -42,18 +37,21 @@ import React.Virtuoso (virtuosoImpl)
 import Record as Record
 import Type.Proxy (Proxy(..))
 import Unsafe.Coerce (unsafeCoerce)
-import Unsafe.Reference (UnsafeRefEq)
 import Untagged.Union (maybeToUor, uorToMaybe)
 import Web.DOM.Document (toNonElementParentNode)
 import Web.DOM.NonElementParentNode (getElementById)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (activeElement)
 import Web.HTML.HTMLDocument as HTMLDocument
-import Web.HTML.HTMLElement (spellcheck)
 import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (document)
+import Yoga.Block.Atom.Input as Input
+import Yoga.Block.Container.Style (col)
 import Yoga.Block.Hook.Key (KeyCode)
 import Yoga.Block.Hook.Key as Key
+import Yoga.Block.Icon.SVG.Spinner (spinner)
+
+motionVirtuosoImpl = unsafePerformEffect $ M.custom virtuosoImpl
 
 type Overscan = { main ∷ Int, reverse ∷ Int }
 type ScrollSeekPlaceholder = ReactComponent { height ∷ Number, index ∷ Int }
@@ -70,14 +68,20 @@ type Args a =
   , containerStyle ∷ E.Style
   }
 
+newtype InputProps = InputProps (∀ x. { | x })
+
+inputProps ∷ ∀ p p_. Union p p_ Input.Props ⇒ { | p } → InputProps
+inputProps = unsafeCoerce
+
 type Props a =
-  { onSelected ∷ a → Effect { inputValue ∷ String, dismiss ∷ Boolean }
+  { onSelected ∷
+      a → Effect { overrideInputValue ∷ Maybe String, dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
   , renderSuggestion ∷ a → JSX
   , loadSuggestions ∷ String → Aff (Either Error (Array a))
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
-  , beforeInput ∷ JSX
+  , inputProps ∷ InputProps
   }
 
 mkDefaultArgs ∷
@@ -108,7 +112,7 @@ mkTypeahead args = do
     , scrollSeekConfigurationʔ: args.scrollSeekConfigurationʔ
     , containerStyle: args.containerStyle
     }
-  React.reactComponent "Typeahead" \props → React.do
+  React.reactComponent "Typeahead" \(props ∷ Props a) → React.do
     input /\ setInput ← React.useState' ""
     suggestions /\ setSuggestions ← React.useState' RemoteData.NotAsked
     activeIndex /\ updateActiveIndex ← React.useState Nothing
@@ -131,22 +135,26 @@ mkTypeahead args = do
         , onRemoved: props.onRemoved
         , onDismiss: setSuggestions RemoteData.NotAsked *> props.onDismiss
         , placeholder: props.placeholder
-        , beforeInput: props.beforeInput
+        -- , beforeInput: props.beforeInput
         , renderSuggestion: props.renderSuggestion
+        , inputProps: props.inputProps
+        , isLoading: suggestions # RemoteData.isLoading
         }
 
 type ViewProps a =
   { activeIndex ∷ Maybe Int
   , input ∷ String
+  , isLoading ∷ Boolean
   , setInput ∷ String → Effect Unit
   , suggestions ∷ RemoteData Error (Array a)
   , renderSuggestion ∷ a → JSX
   , updateActiveIndex ∷ (Maybe Int → Maybe Int) → Effect Unit
-  , onSelected ∷ a → Effect { inputValue ∷ String, dismiss ∷ Boolean }
+  , onSelected ∷
+      a → Effect { overrideInputValue ∷ Maybe String, dismiss ∷ Boolean }
   , onRemoved ∷ a → Effect Unit
   , onDismiss ∷ Effect Unit
   , placeholder ∷ String
-  , beforeInput ∷ JSX
+  , inputProps ∷ InputProps
   }
 
 mkTypeaheadView ∷
@@ -162,137 +170,128 @@ mkTypeaheadView ∷
 mkTypeaheadView
   args@{ contextMenuLayerId } = do
   -- loader ← mkLoader
-  loadingBar ← mkKittLoadingBar
   popOver ← mkPopOverView
   itemCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadItem"
     resultContainerStyle
     M.li
   listCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadList"
-    ( scrollBar
-        { background: F.green._200
-        , col: F.green._400
-        , width: 8
-        , borderRadius: 2
-        , borderWidth: 4
-        }
-    )
+    (overflowHidden)
     R.ul'
 
-  React.reactComponent "TypeaheadView" \(props ∷ ViewProps a) → React.do
-    let
-      { renderSuggestion
-      , input
-      , setInput
-      , suggestions
-      , onDismiss
-      , activeIndex
-      , updateActiveIndex
-      , placeholder
+  React.reactComponent "TypeaheadView" \(props ∷ ViewProps a) →
+    React.do
+      let
+        { renderSuggestion
+        , input
+        , setInput
+        , suggestions
+        , onDismiss
+        , activeIndex
+        , updateActiveIndex
+        , placeholder
+        , isLoading
+        } = props
+      let (InputProps inputProps) = props.inputProps
+      id ← React.useId
+      -- The previous suggestions so we have something to display while loading
+      prevSuggs /\ setPrevSuggs ← React.useState' []
+      inputHasFocus /\ setInputHasFocus ← React.useState' false
+      popupHasFocus /\ setPopupHasFocus ← React.useState' false
+      isScrolling /\ setIsScrolling ← React.useState' false
+      isAnimating /\ setIsAnimating ← React.useState' false
+      inputContainerRef ← React.useRef null
+      inputRef ← React.useRef null
 
-      } = props
-    id ← React.useId
-    -- The previous suggestions so we have something to display while loading
-    prevSuggs /\ setPrevSuggs ← React.useState' []
-    inputHasFocus /\ setInputHasFocus ← React.useState' false
-    popupHasFocus /\ setPopupHasFocus ← React.useState' false
-    isScrolling /\ setIsScrolling ← React.useState' false
-    isAnimating /\ setIsAnimating ← React.useState' false
-    inputContainerRef ← React.useRef null
-    inputRef ← React.useRef null
+      let focusIsWithin = inputHasFocus || popupHasFocus
 
-    let focusIsWithin = inputHasFocus || popupHasFocus
-
-    { focusWithinProps } ←
-      useFocusWithin
-        { onFocusWithin: handler_ (setPopupHasFocus true)
-        , onBlurWithin: handler_ (setPopupHasFocus false)
-        }
-
-    { focusProps } ←
-      useFocus
-        { onFocus: handler_ (setInputHasFocus true)
-        , onBlur: handler_ (setInputHasFocus false)
-        }
-
-    -- We store the result whenever we have successful suggestions
-    React.useEffect (RemoteData.isSuccess suggestions) do
-      case suggestions of
-        RemoteData.Success suggs | suggs /= prevSuggs → setPrevSuggs suggs
-        _ → mempty
-      mempty
-
-    let
-      focusInput ∷ Effect Unit
-      focusInput = do
-        maybeElem ← React.readRefMaybe inputRef
-        for_ (maybeElem >>= HTMLElement.fromNode) focus
-
-      blurCurrentItem ∷ Effect Unit
-      blurCurrentItem = do
-        maybeActive ← window >>= document >>= activeElement
-        for_ maybeActive \active → blur active
-
-    focusActiveElement id { isAnimating, isScrolling } blurCurrentItem
-      activeIndex
-    let
-      onSelected i = do
-        { inputValue, dismiss } ← props.onSelected i
-        when (props.input /= inputValue) do
-          props.setInput inputValue
-        when dismiss do
-          updateActiveIndex (const Nothing)
-          blurCurrentItem
-
-    -- Keyboard events
-    let
-      handleKeyDown =
-        mkHandleKeyDown
-          { activeIndex
-          , updateActiveIndex
-          , focusInput
-          , suggestions: suggestions # RemoteData.toMaybe # fromMaybe prevSuggs
-          , onSelected
-          , onDismiss
+      { focusWithinProps } ←
+        useFocusWithin
+          { onFocusWithin: handler_ (setPopupHasFocus true)
+          , onBlurWithin: handler_ (setPopupHasFocus false)
           }
-    let
-      inputBox = fragment
-        [ inputElement
-        , popOver
-            { hide: blurCurrentItem
-            , placement: Placement Below Start
-            , placementRef: inputContainerRef
-            , dismissBehaviourʔ: Nothing
-            , onAnimationStateChange: setIsAnimating
-            , containerId: contextMenuLayerId
-            , childʔ:
-                if focusIsWithin then Just $ R.div'
-                  </
-                    { onFocus: focusWithinProps.onFocus
-                    , onBlur: focusWithinProps.onBlur
-                    }
-                  /> [ resultsContainer ]
-                else Nothing
+
+      { focusProps } ←
+        useFocus
+          { onFocus: handler_ (setInputHasFocus true)
+          , onBlur: handler_ (setInputHasFocus false)
+          }
+
+      -- We store the result whenever we have successful suggestions
+      React.useEffect (RemoteData.isSuccess suggestions) do
+        case suggestions of
+          RemoteData.Success suggs | suggs /= prevSuggs → setPrevSuggs suggs
+          _ → mempty
+        mempty
+
+      let
+        visibleData = case suggestions of
+          RemoteData.NotAsked → prevSuggs
+          RemoteData.Loading → prevSuggs
+          RemoteData.Failure _ → prevSuggs
+          RemoteData.Success suggs → suggs
+
+        focusInput ∷ Effect Unit
+        focusInput = do
+          maybeElem ← React.readRefMaybe inputRef
+          for_ (maybeElem >>= HTMLElement.fromNode) focus
+
+        blurCurrentItem ∷ Effect Unit
+        blurCurrentItem = do
+          maybeActive ← window >>= document >>= activeElement
+          for_ maybeActive \active → blur active
+
+      focusActiveElement id { isAnimating, isScrolling } blurCurrentItem
+        activeIndex
+      let
+        onSelected i = do
+          { overrideInputValue, dismiss } ← props.onSelected i
+          when (Just props.input /= overrideInputValue) do
+            for_ overrideInputValue props.setInput
+          when dismiss do
+            updateActiveIndex (const Nothing)
+            blurCurrentItem
+
+      -- Keyboard events
+      let
+        handleKeyDown =
+          mkHandleKeyDown
+            { activeIndex
+            , updateActiveIndex
+            , focusInput
+            , suggestions: suggestions # RemoteData.toMaybe # fromMaybe
+                prevSuggs
+            , onSelected
+            , onDismiss
             }
-        ]
+      let
+        inputBox = fragment
+          [ inputElement
+          , popOver
+              { hide: blurCurrentItem
+              , placement: Placement Below Start
+              , placementRef: inputContainerRef
+              , dismissBehaviourʔ: Nothing
+              , onAnimationStateChange: setIsAnimating
+              , containerId: contextMenuLayerId
+              , childʔ:
+                  if focusIsWithin then Just $ R.div'
+                    </
+                      { onFocus: focusWithinProps.onFocus
+                      , onBlur: focusWithinProps.onBlur
+                      }
+                    /> [ resultsContainer ]
+                  else Nothing
+              }
+          ]
 
-      inputElement = R.div'
-        </*
-          { css: plumageInputContainerStyle <>
-              if focusIsWithin then plumageInputContainerFocusWithinStyle
-              else mempty
-          , ref: inputContainerRef
-          }
-        />
-          [ props.beforeInput
-          , R.input'
-              </*>
-                { css: plumageInputStyle
-                , id
-                , ref: inputRef
+        inputElement = React.element Input.component
+          ( ( inputProps `mergeProps`
+                { id
+                , ref: inputContainerRef
+                , inputRef: inputRef
                 , spellCheck: false
                 , autoComplete: "off"
                 , placeholder
-                , className: "plm-input"
                 , value: input
                 , onChange: handler targetValue (traverse_ setInput)
                 , onMouseEnter: handler_ (when focusIsWithin focusInput)
@@ -303,79 +302,95 @@ mkTypeaheadView
 
                 , onFocus: focusProps.onFocus
                 , onBlur: focusProps.onBlur
+                , trailing:
+                    if isLoading then H.div_
+                      (widthAndHeight 18 <> textCol' col.textPaler2)
+                      [ spinner ]
+                    else (unsafeCoerce inputProps.trailing)
                 }
-          ]
+            ) ∷ { | Input.Props }
+          )
 
-      wrapSuggestion i suggestion _ =
-        R.div'
-          </*
-            { tabIndex: -1
-            , id: id <> "-suggestion-" <> show i
-            , css: F.focus (background gray._100 <> outlineNone)
-            , onMouseMove:
-                handler syntheticEvent \det → unless (activeIndex == Just i) do
-                  let
-                    movementX = (unsafeCoerce det).movementX # uorToMaybe #
-                      fromMaybe 0.0
-                  let
-                    movementY = (unsafeCoerce det).movementY # uorToMaybe #
-                      fromMaybe 0.0
-                  unless ((movementX == zero && movementY == zero))
-                    do updateActiveIndex (const (Just i))
-            , onKeyDown: handler preventDefault mempty
-            -- ^ disables scrolling with arrow keys
-            , onKeyUp:
-                handler SE.key
-                  (traverse_ handleKeyDown <<< (parseKey =<< _))
-            , onClick: capture_ do
-                onSelected suggestion
+        wrapSuggestion i suggestion _ =
+          R.div'
+            </*
+              { tabIndex: -1
+              , id: id <> "-suggestion-" <> show i
+              , css: F.focus
+                  ( background' col.highlight
+                      <> textCol' col.highlightText
+                      <> outlineNone
+                  )
+              , onMouseMove:
+                  handler syntheticEvent \det → unless (activeIndex == Just i)
+                    do
+                      let
+                        movementX = (unsafeCoerce det).movementX # uorToMaybe #
+                          fromMaybe 0.0
+                      let
+                        movementY = (unsafeCoerce det).movementY # uorToMaybe #
+                          fromMaybe 0.0
+                      unless ((movementX == zero && movementY == zero))
+                        do updateActiveIndex (const (Just i))
+              , onKeyDown: handler preventDefault mempty
+              -- ^ disables scrolling with arrow keys
+              , onKeyUp:
+                  handler SE.key
+                    (traverse_ handleKeyDown <<< (parseKey =<< _))
+              , onClick: capture_ do
+                  onSelected suggestion
+              }
+            /> [ renderSuggestion suggestion ]
+
+        resultsContainer =
+          M.div
+            </*
+              { css: minWidth 210 <> mX 0 <> args.containerStyle
+              , initial: M.initial $ false
+              , animate: M.animate $ R.css
+                  { height:
+                      if Array.length visibleData > 5 then 230
+                      else 120
+                  }
+              }
+            />
+              [ suggestionElements
+              ]
+
+        suggestionElements = virtuosoImpl </*>
+          ( { overscan: args.overscan
+            , className: "virtuoso"
+            , css:
+                scrollBar'
+                  { background: col.inputBackground
+                  , col: col.textPaler2
+                  , width: E.var "--s0"
+                  , borderRadius: E.px 8
+                  , borderWidth: E.px 4
+                  }
+            , scrollSeekConfiguration: args.scrollSeekConfigurationʔ #
+                maybeToUor
+            , components: case args.scrollSeekPlaceholderʔ of
+                Nothing → { "Item": itemCompo, "List": listCompo }
+                Just scrollSeekPlaceholder → unsafeCoerce
+                  { "Item": itemCompo
+                  , "List": listCompo
+                  , "ScrollSeekPlaceholder": scrollSeekPlaceholder
+                  }
+            , isScrolling: mkEffectFn1 setIsScrolling
+            , style: R.css
+                { height: "100%", width: "100%" }
+            , data: visibleData
+            , itemContent: mkFn3 wrapSuggestion
             }
-          /> [ renderSuggestion suggestion ]
+          )
 
-      resultsContainer =
-        R.div'
-          </*
-            { css: args.containerStyle
-            , style: R.css { overscrollBehavior: "auto" }
-            }
-          />
-            [ suggestionElements
-            , H.div_ (pX 8)
-                [ loadingBar
-                    { numberOfLights: 10
-                    , remoteData: suggestions
-                    }
-                ]
-            ]
+      useEffect focusIsWithin do
+        unless focusIsWithin do
+          updateActiveIndex (const Nothing)
+        mempty
 
-      suggestionElements =
-        virtuosoImpl </>
-          { overscan: args.overscan
-          , scrollSeekConfiguration: args.scrollSeekConfigurationʔ # maybeToUor
-          , components: case args.scrollSeekPlaceholderʔ of
-              Nothing → { "Item": itemCompo, "List": listCompo }
-              Just scrollSeekPlaceholder → unsafeCoerce
-                { "Item": itemCompo
-                , "List": listCompo
-                , "ScrollSeekPlaceholder": scrollSeekPlaceholder
-                }
-          , isScrolling: mkEffectFn1 setIsScrolling
-          , style: R.css
-              { height: 230, width: "100%" }
-          , data: case suggestions of
-              RemoteData.NotAsked → prevSuggs
-              RemoteData.Loading → prevSuggs
-              RemoteData.Failure _ → prevSuggs
-              RemoteData.Success suggs → suggs
-          , itemContent: mkFn3 wrapSuggestion
-          }
-
-    useEffect focusIsWithin do
-      unless focusIsWithin do
-        updateActiveIndex (const Nothing)
-      mempty
-
-    pure inputBox
+      pure inputBox
 
   where
   focusActiveElement
@@ -398,24 +413,21 @@ mkTypeaheadView
 
 resultsContainerStyle ∷ E.Style
 resultsContainerStyle =
-  textCol TW.gray._700
-    <> background' (var ("--plm-popupBackground-colour"))
+  background' col.inputBackground
     <> pT 0
-    <> pB 6
     <> pX 0
     <> flexCol
     <> justifyEnd
     <> itemsStart
     <> gap 3
     <> roundedLg
-    <> border 1
-    <> borderTop 0
     <> textXs
     <> shadowLg
     <> borderCol TW.gray._200
+    <> overflowHidden
 
 resultContainerStyle ∷ E.Style
-resultContainerStyle = pY 2 <> cursorPointer
+resultContainerStyle = pY 2 <> cursorPointer <> overflowHidden
 
 parseKey ∷ String → Maybe KeyCode
 parseKey = case _ of

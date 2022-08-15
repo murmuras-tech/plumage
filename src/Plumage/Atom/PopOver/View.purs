@@ -95,21 +95,21 @@ mkPopOverView = do
         { transformOrigin: toTransformOrigin placement
         }
       initial = M.initial $ R.css
-        { scale: 0.67
+        { scale: 0.7
         , opacity: 0
         }
       animate = M.animate $ R.css
         { scale: 1
         , opacity: 1
         , y: 0
-        , transition: { type: "spring", bounce: 0.16, duration: 0.3 }
+        , transition: { type: "spring", bounce: 0.3, duration: 0.3 }
         }
       exit =
         M.exit $ R.css
-          { scale: 0.67
-          , opacity: 0
+          { scale: 0.8
+          , opacity: 0.0
           , transition:
-              { type: "spring", bounce: 0.2, duration: 0.15 }
+              { type: "spring", bounce: 0.2, duration: 0.2 }
           }
       onAnimationComplete = M.onAnimationComplete \fgn → do
         props.onAnimationStateChange false

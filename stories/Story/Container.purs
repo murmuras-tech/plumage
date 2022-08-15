@@ -8,10 +8,11 @@ import React.Basic (JSX, fragment)
 import React.Basic.DOM as R
 import React.Basic.Emotion as E
 import Yoga ((</>))
+import Yoga.Block.Container.Style as Yoga
 
 inContainer ∷ JSX → JSX
 inContainer content = fragment
-  [ E.global </> { styles: globalStyles }
+  [ E.global </> { styles: globalStyles <> Yoga.global }
   , H.div_
       ( minHeight' full <> minWidth' full <> background gray._400
           <> pXY 0
