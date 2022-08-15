@@ -8,7 +8,7 @@ import Data.Function.Uncurried (mkFn3)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
-import Effect.Uncurried (mkEffectFn1)
+import Effect.Uncurried (mkEffectFn1, runEffectFn1, runEffectFn2)
 import Effect.Unsafe (unsafePerformEffect)
 import Fahrtwind (background', itemsStart, justifyEnd, mX, minWidth, outlineNone, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthAndHeight)
 import Fahrtwind as F
@@ -408,8 +408,13 @@ mkTypeaheadView
               ( HTMLDocument.toDocument >>> toNonElementParentNode >>>
                   getElementById (id <> "-suggestion-" <> show i)
               )
-            for_ (suggʔ >>= HTMLElement.fromElement) focus
+            for_ (suggʔ >>= HTMLElement.fromElement) focusPreventScroll
       mempty
+
+-- https://caniuse.com/mdn-api_svgelement_focus_options_preventscroll_parameter
+focusPreventScroll ∷ HTMLElement → Effect Unit
+focusPreventScroll (htmlElement ∷ HTMLElement) = do
+  runEffectFn1 (unsafeCoerce htmlElement).focus { preventScroll: true }
 
 resultsContainerStyle ∷ E.Style
 resultsContainerStyle =
