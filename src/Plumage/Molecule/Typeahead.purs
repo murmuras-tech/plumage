@@ -274,7 +274,7 @@ mkTypeaheadView
           mkHandleKeyUp
             { activeIndex
             , updateActiveIndex: \update → updateActiveIndex \old →
-                { activeIndex: old.activeIndex, updatedByKeyboard: true }
+                { activeIndex: update old.activeIndex, updatedByKeyboard: true }
             , focusInput
             , suggestions: suggestions # RemoteData.toMaybe # fromMaybe
                 prevSuggs
