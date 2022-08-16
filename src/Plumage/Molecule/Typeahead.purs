@@ -51,8 +51,6 @@ import Yoga.Block.Hook.Key (KeyCode)
 import Yoga.Block.Hook.Key as Key
 import Yoga.Block.Icon.SVG.Spinner (spinner)
 
-motionVirtuosoImpl = unsafePerformEffect $ M.custom virtuosoImpl
-
 type Overscan = { main ∷ Int, reverse ∷ Int }
 type ScrollSeekPlaceholder = ReactComponent { height ∷ Number, index ∷ Int }
 type ScrollSeekConfiguration =
@@ -66,6 +64,7 @@ type Args a =
   , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   , overscan ∷ Overscan
   , containerStyle ∷ E.Style
+  , itemStyle ∷ E.Style
   }
 
 newtype InputProps = InputProps (∀ x. { | x })
@@ -101,7 +100,15 @@ mkDefaultArgs
   , scrollSeekConfigurationʔ: Nothing
   , overscan: { main: 100, reverse: 100 }
   , containerStyle: resultsContainerStyle
+  , itemStyle: itemStyle
   }
+
+itemStyle =
+  F.focus
+    ( background' col.highlight
+        <> textCol' col.highlightText
+        <> outlineNone
+    )
 
 mkTypeahead ∷ ∀ a. Eq a ⇒ Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
@@ -111,6 +118,7 @@ mkTypeahead args = do
     , scrollSeekPlaceholderʔ: args.scrollSeekPlaceholderʔ
     , scrollSeekConfigurationʔ: args.scrollSeekConfigurationʔ
     , containerStyle: args.containerStyle
+    , itemStyle: args.itemStyle
     }
   React.reactComponent "Typeahead" \(props ∷ Props a) → React.do
     input /\ setInput ← React.useState' ""
@@ -138,7 +146,6 @@ mkTypeahead args = do
         , onRemoved: props.onRemoved
         , onDismiss: setSuggestions RemoteData.NotAsked *> props.onDismiss
         , placeholder: props.placeholder
-        -- , beforeInput: props.beforeInput
         , renderSuggestion: props.renderSuggestion
         , inputProps: props.inputProps
         , isLoading: suggestions # RemoteData.isLoading
@@ -177,6 +184,7 @@ mkTypeaheadView ∷
   , scrollSeekConfigurationʔ ∷ Maybe ScrollSeekConfiguration
   , overscan ∷ Overscan
   , containerStyle ∷ E.Style
+  , itemStyle ∷ E.Style
   } →
   Effect (ReactComponent (ViewProps a))
 mkTypeaheadView
@@ -335,11 +343,7 @@ mkTypeaheadView
             </*
               { tabIndex: -1
               , id: id <> "-suggestion-" <> show i
-              , css: F.focus
-                  ( background' col.highlight
-                      <> textCol' col.highlightText
-                      <> outlineNone
-                  )
+              , css: args.itemStyle
               , onMouseMove:
                   handler syntheticEvent \det → unless (activeIndex == Just i)
                     do
@@ -349,14 +353,13 @@ mkTypeaheadView
                       let
                         movementY = (unsafeCoerce det).movementY # uorToMaybe #
                           fromMaybe 0.0
-                      unless ((movementX == zero && movementY == zero))
-                        do
-                          updateActiveIndex
-                            ( const
-                                { activeIndex: Just i
-                                , updatedByKeyboard: false
-                                }
-                            )
+                      unless ((movementX == zero && movementY == zero)) do
+                        updateActiveIndex
+                          ( const
+                              { activeIndex: Just i
+                              , updatedByKeyboard: false
+                              }
+                          )
               , onKeyDown: handler preventDefault mempty
               -- ^ disables scrolling with arrow keys
               , onKeyUp:
