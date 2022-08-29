@@ -8,21 +8,16 @@ import Data.Function.Uncurried (mkFn3)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, attempt, delay)
 import Effect.Exception (Error)
-import Effect.Uncurried (mkEffectFn1, runEffectFn1, runEffectFn2)
-import Effect.Unsafe (unsafePerformEffect)
-import Fahrtwind (background', itemsStart, justifyEnd, mX, minWidth, outlineNone, overflowHidden, roundedLg, shadowLg, textCol', textXs, widthAndHeight)
-import Fahrtwind as F
-import Fahrtwind.Style (pT, pX, pY)
-import Fahrtwind.Style.Border (borderCol)
-import Fahrtwind.Style.Color.Tailwind as TW
-import Fahrtwind.Style.Cursor (cursorPointer)
-import Fahrtwind.Style.Display.Flex (flexCol, gap)
-import Fahrtwind.Style.ScollBar (scrollBar')
+import Effect.Uncurried (mkEffectFn1, runEffectFn1)
+import Fahrtwind (mX, minWidth, overflowHidden, textCol', widthAndHeight)
+import Fahrtwind.Style.ScrollBar (scrollBar')
+
 import Framer.Motion as M
 import Network.RemoteData (RemoteData)
 import Network.RemoteData as RemoteData
 import Plumage.Atom.PopOver.Types (Placement(..), PrimaryPlacement(..), SecondaryPlacement(..))
 import Plumage.Atom.PopOver.View (mkPopOverView)
+import Plumage.Molecule.Typeahead.Style as Style
 import Plumage.Util.HTML as H
 import Prim.Row (class Lacks, class Nub)
 import React.Aria.Interactions2 (useFocus, useFocusWithin)
@@ -40,6 +35,7 @@ import Unsafe.Coerce (unsafeCoerce)
 import Untagged.Union (maybeToUor, uorToMaybe)
 import Web.DOM.Document (toNonElementParentNode)
 import Web.DOM.NonElementParentNode (getElementById)
+
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (activeElement)
 import Web.HTML.HTMLDocument as HTMLDocument
@@ -99,16 +95,9 @@ mkDefaultArgs
   , scrollSeekPlaceholderʔ: Nothing
   , scrollSeekConfigurationʔ: Nothing
   , overscan: { main: 100, reverse: 100 }
-  , containerStyle: resultsContainerStyle
-  , itemStyle: itemStyle
+  , containerStyle: Style.resultsContainer
+  , itemStyle: Style.item
   }
-
-itemStyle =
-  F.focus
-    ( background' col.highlight
-        <> textCol' col.highlightText
-        <> outlineNone
-    )
 
 mkTypeahead ∷ ∀ a. Eq a ⇒ Args a → Effect (ReactComponent (Props a))
 mkTypeahead args = do
@@ -192,7 +181,7 @@ mkTypeaheadView
   -- loader ← mkLoader
   popOver ← mkPopOverView
   itemCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadItem"
-    resultContainerStyle
+    Style.resultContainer
     M.li
   listCompo ∷ ReactComponent {} ← mkForwardRefComponentWithStyle "TypeaheadList"
     (overflowHidden)
@@ -222,6 +211,7 @@ mkTypeaheadView
       isAnimating /\ setIsAnimating ← React.useState' false
       inputContainerRef ← React.useRef null
       inputRef ← React.useRef null
+      virtuosoRef ← React.useRef null
 
       let focusIsWithin = inputHasFocus || popupHasFocus
 
@@ -387,6 +377,7 @@ mkTypeaheadView
 
         suggestionElements = virtuosoImpl </*>
           ( { overscan: args.overscan
+            , ref: virtuosoRef
             , className: "virtuoso"
             , css:
                 scrollBar'
@@ -444,24 +435,6 @@ mkTypeaheadView
 focusPreventScroll ∷ HTMLElement → Effect Unit
 focusPreventScroll (htmlElement ∷ HTMLElement) = do
   runEffectFn1 (unsafeCoerce htmlElement).focus { preventScroll: true }
-
-resultsContainerStyle ∷ E.Style
-resultsContainerStyle =
-  background' col.inputBackground
-    <> pT 0
-    <> pX 0
-    <> flexCol
-    <> justifyEnd
-    <> itemsStart
-    <> gap 3
-    <> roundedLg
-    <> textXs
-    <> shadowLg
-    <> borderCol TW.gray._200
-    <> overflowHidden
-
-resultContainerStyle ∷ E.Style
-resultContainerStyle = pY 2 <> cursorPointer <> overflowHidden
 
 parseKey ∷ String → Maybe KeyCode
 parseKey = case _ of

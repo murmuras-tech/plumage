@@ -600,7 +600,7 @@ in  upstream
     }
   with ry-blocks =
     { repo = "https://github.com/rowtype-yoga/ry-blocks.git"
-    , version = "cc8d6be5cdc518c82bd30822b6be0ca292c52ec7"
+    , version = "395875edb755f62755d49d9bbfb52c860eaa031b"
     , dependencies =
       [ "aff"
       , "aff-promise"
@@ -660,6 +660,7 @@ in  upstream
       , "web-events"
       , "web-html"
       , "web-uievents"
+      , "yoga-tree"
       ]
     }
   with heterogeneous =
@@ -722,13 +723,24 @@ in  upstream
       , "typelevel-prelude"
       , "unsafe-coerce"
       ]
-    , version = "654be2533b0ea950511f26e29ba9ab574f7abc03"
+    , version = "6f457d26d56d15f8eb3609dd687dba19fbfd85b5"
     }
   with react-virtuoso =
     { dependencies =
-        ( https://raw.githubusercontent.com/rowtype-yoga/purescript-react-virtuoso/main/spago.dhall
-            sha256:9c7c1ced896538360ba325dcefe912fed8c0207bc828f68ebadf5f3b83ee5012
-        ).dependencies
+      [ "effect", "functions", "prelude", "react-basic", "react-basic-dom" ]
     , repo = "https://github.com/rowtype-yoga/purescript-react-virtuoso.git"
     , version = "5be142c5a651509e9e9a68582ed1807c029ba1b5"
+    }
+  with yoga-tree =
+    { dependencies =
+      [ "arrays"
+      , "control"
+      , "foldable-traversable"
+      , "free"
+      , "maybe"
+      , "prelude"
+      , "tailrec"
+      ]
+    , version = "master"
+    , repo = "https://github.com/rowtype-yoga/purescript-yoga-tree.git"
     }
